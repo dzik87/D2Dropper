@@ -71,11 +71,16 @@
 04. Use DROP menu to define game name and password.
 05. Type in value (must be more than 0) and use drop button.
 
-## Enjoy your personal dropper.
+### Enjoy your personal dropper.
 
 # Explaination word
 This is my work.
 I make it public because its right thing to do.
 LAZ sucks.
 
-dzik © 2021
+Code is provided as it is.
+Feel free to contribute.
+
+My Discord username: `dzik#2463`
+
+### dzik © 2021
