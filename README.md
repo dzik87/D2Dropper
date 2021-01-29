@@ -1,6 +1,6 @@
 # Dropper Install: 
 
-01. Download [ItemManagerServer.zip](https://github.com/dzik87/D2Dropper/releases/download/1.0.0/ItemManagerServer.zip) and unzip everything to C drive.
+01. Download [ItemManagerServer.zip](https://github.com/dzik87/D2Dropper/releases/download/1.0.0/ItemManagerServer.zip) and unzip everything to C drive root.
 02. Navigate to C drive and install 01.vcredist_x862012.exe
 03. Open start menu type in CMD and run it as Administrator.
 04. In command line console type in `cd /` and press enter
@@ -36,16 +36,17 @@
 03. You should see now your dropper page and be able to use Drop, TradeList and Admin menu.
 
 # Setting Up Kolbot for Droppers:
-01. Download kolbot from [here](https://github.com/dzik87/D2Dropper/releases/download/1.0.0/kolbot-master.zip)
-02. Navigate to `d2bs\kolbot\` and run `link.bat` as Admin
-03. This will create folder called `databases`
-04. Inside this folder you will see exactly same content as in `C:\Apache\htdocs`
-05. Start D2Bot
-06. Create New profiles in D2Bot and name them in same way as you defined them in `config.php`
-07. Default names are `dropper1`, `dropper2` and so on.
-08. Use `D2BotDropper.dbj` as starter file.
-09. Setup as many profiles as you defined in `config.php`
-10. It is important to have same ammount of profiles in D2Bot and in config.php to avoid issues.
+01. Download latest kolbot from https://github.com/blizzhackers/kolbot
+02. Copy and replace files from `kolbot` subfolder to `d2bs\kolbot\`
+03. Navigate to `d2bs\kolbot\` and run `link.bat` as Admin
+04. This will create folder called `databases`
+05. Inside this folder you will see exactly same content as in `C:\Apache\htdocs`
+06. Start D2Bot
+07. Create New profiles in D2Bot and name them in same way as you defined them in `config.php`
+08. Default names are `dropper1`, `dropper2` and so on.
+09. Use `D2BotDropper.dbj` as starter file.
+10. Setup as many profiles as you defined in `config.php`
+11. It is important to have same ammount of profiles in D2Bot and in config.php to avoid issues.
 ### YOU MUST HAVE ALL DEFINED DROPPER PROFILES ALWAYS RUNNING IN D2BOT
 
 # Logging existing mules to dropper page:

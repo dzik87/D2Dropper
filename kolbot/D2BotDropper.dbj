@@ -1,0 +1,1031 @@
+var StarterConfig = {
+	JoinDelay: 5, // Time in seconds to wait before next join attempt
+	SwitchKeyDelay: 5, // Seconds to wait before switching a used/banned key or after realm down
+	minGameTime: 15, // Minimum time to stay in game
+	JoinRetrys: 2, // Amount of times to fail joining a game before removing all jobs for that game
+
+	CrashDelay: 5, // Seconds to wait after a d2 window crash
+	RealmDownDelay: 2, // Minutes to wait after getting Realm Down message
+	UnableToConnectDelay: 5, // Minutes to wait after Unable To Connect message
+	CDKeyInUseDelay: 5, // Minutes to wait before connecting again if CD-Key is in use. SwitchKeys overrides this!
+	ConnectingTimeout: 20, // Seconds to wait before cancelling the 'Connecting...' screen
+	PleaseWaitTimeout: 30, // Seconds to wait before cancelling the 'Please Wait...' screen
+	WaitInLineTimeout: 60, // Seconds to wait before cancelling the 'Waiting in Line...' screen
+	GameDoesNotExistTimeout: 15 // Seconds to wait before cancelling the 'Game does not exist.' screen
+};
+
+var usePackets = true, // Set true to drop using packets
+	restartDropper = false; // Set true to restart dropper profile after successful drop, or false to quit to lobby
+
+include("json2.js");
+include("NTItemParser.dbl");
+include("NTItemAlias.dbl");
+include("OOG.js");
+include("common/Config.js");
+include("common/Loader.js");
+include("common/Misc.js");
+include("common/Pather.js");
+include("common/Attack.js");
+include("common/Precast.js");
+include("common/Prototypes.js");
+include("common/Storage.js");
+include("common/Town.js");
+include("common/CollMap.js");
+include("ItemDB.js");
+include("MuleLogger.js");
+
+load("tools/AreaWatcher.js"); 
+
+var i, gameInfo, ingame, handle, nextJob, lastGameTick, connectFail, lastGameName,
+	gameCount = DataFile.getStats().runs + 1,
+	lastGameStatus = "ready",
+	joinRetry = 0,
+	jobs = [];
+
+if (!FileTools.exists("data/" + me.profile + ".json") && !FileTools.exists("data/~$" + me.profile + ".json")) {
+	DataFile.create();
+}
+
+function locationTimeout(time, location) {
+	var endtime = getTickCount() + time;
+
+	while (!me.ingame && getLocation() === location && endtime > getTickCount()) {
+		delay(500);
+	}
+
+	return (getLocation() !== location);
+}
+
+function updateCount() {
+	D2Bot.updateCount();
+	delay(1000);
+	ControlAction.click(6, 264, 366, 272, 35);
+
+	try {
+		login(me.profile);
+	} catch (e) {
+
+	}
+
+	delay(1000);
+	ControlAction.click(6, 33, 572, 128, 35);
+}
+
+function ReceiveCopyData(mode, msg) {
+	switch (msg) {
+	case "Handle":
+		handle = mode;
+
+		break;
+	}
+
+	switch (mode) {
+	case 2: // Game info
+		gameInfo = JSON.parse(msg);
+
+		break;
+	case 4:
+		// Heartbeat ping
+		if (msg === "pingreq") {
+			sendCopyData(null, me.windowtitle, 4, "pingrep");
+		}
+
+		break;
+	}
+}
+
+function findNextJob() {
+	var stuff;
+
+	if (jobs.length === 0) {
+		return false;
+	}
+
+	if (jobs.length > 0) {
+		for (i = 0; i < jobs.length; i++) {
+			stuff = JSON.parse(jobs[i]);
+
+			if (stuff.account && stuff.account === me.account) {
+				return stuff;
+			}
+		}
+
+		return JSON.parse(jobs[0]);
+	}
+
+	return false;
+}
+
+function getJobs(removeFinished, ftjhandler) {
+	var writeFile, findChange, i, myJob, info, currentReq, readFile, exists, x,
+		ranDelay = Math.floor((Math.random() * 1500) + 1),
+		accountsInProgress = [];
+
+	delay(ranDelay);
+
+	try {
+		findChange = FileTools.readText("databases/drop_"+me.profile+".json");
+		if (findChange.length === 0) {
+			return false;
+		}
+
+		readFile = File.open("databases/drop_"+me.profile+".json", FILE_READ, false, true, true);
+		info = readFile.readAllLines();
+		readFile.close();
+
+		writeFile = File.open("databases/drop_"+me.profile+".json", FILE_WRITE, false, true, true);
+
+	} catch (e) {
+		return false;
+	}
+
+	if (writeFile && info[0] !== "") {
+
+		// Sort through info and remove completed jobs, find jobs we SHOULDN'T take, and check for unfinished jobs
+		for (i = 0; i < info.length-1; i++) {
+			currentReq = JSON.parse(info[i]);
+
+			// Remove all jobs for a specific game name
+			if (ftjhandler && removeFinished) {
+				if (currentReq.gameName === removeFinished) {
+					print("\xFFc;Dropper \xFFc0:: Removed job for Game: " + currentReq.gameName);
+					info.splice(i, 1);
+					i--;
+				}
+				continue;
+			}
+
+			// Remove completed drops
+			if (!ftjhandler && removeFinished) {
+				if (currentReq.charName === removeFinished && currentReq.gameName.toLowerCase() === lastGameName) {
+					print("\xFFc;Dropper \xFFc0:: Removed job for Char: " + removeFinished);
+					info.splice(i, 1);
+					i--;
+				}
+				continue;
+			}
+
+			// Check to see if we crashed or messed up a drop somewhere
+			if (!removeFinished && currentReq.dropProfile === me.profile) {
+				for (x = 0; x < jobs.length; x++) {
+					if (jobs[i] === info[i]) {
+						exists = true;
+					}
+				}
+
+				if (!exists) {
+					currentReq.dropProfile = "";
+					info[i] = JSON.stringify(currentReq);
+				}				 
+			}
+
+			// Create an array of accounts current jobs are working on so we don't have two profiles logging on same acc
+			if (currentReq.dropProfile && currentReq.dropProfile !== me.profile) {
+				accountsInProgress.push(currentReq.account);
+			}
+		}
+
+		// Second loop looks for new jobs
+		for (i = 0; i < info.length-1; i++) {
+			currentReq = JSON.parse(info[i]);
+
+			// Find new drop jobs
+			if (!removeFinished && !currentReq.dropProfile) {
+				if (!myJob && accountsInProgress.indexOf(currentReq.account) === -1) {
+					myJob = currentReq;
+				}
+
+				// Find other jobs that are for that acc and game
+				if (myJob && currentReq.account === myJob.account && currentReq.gameName === myJob.gameName) { 
+					print ("\xFFc;Dropper \xFFc0:: Job found: Char: " + currentReq.charName + ", Game: " + currentReq.gameName + ", Acc: " + currentReq.account);
+
+					currentReq.dropProfile = me.profile;
+					info[i] = JSON.stringify(currentReq);
+
+					jobs.push(info[i]);
+				}
+			}
+		}
+
+		info = info.join("\n");
+		writeFile.write(info);
+	}
+
+	if (writeFile) {
+		writeFile.close();
+	}
+
+	return true;
+}
+
+function FTJHandler() {
+	var i, stuff;
+
+	if (joinRetry < StarterConfig.JoinRetrys) {
+		return false;
+	}
+
+	joinRetry = 0;
+
+	for (i = 0; i < jobs.length; i++) {
+		stuff = JSON.parse(jobs[i]);
+
+		if (stuff.gameName === nextJob.gameName) {
+			jobs.splice(i, 1);
+			i--;
+		}
+	}
+
+	while (!getJobs(nextJob.gameName, true)) { // Remove jobs for char..
+		delay(100);
+	}
+
+	nextJob = findNextJob();
+
+	return true;
+}
+
+function DropIt() {
+	var dropReq, items, i, x, q, dropName, itemRead, index, current, dropValue, preDropCount, tick, failedCount, seekCount,
+		successfulDrops = [],
+		itemsToDrop = [],
+		itemsIDs = [],
+		itemSkin = [],
+		checkSums = [],
+		findList = [],
+		dropList = [];
+
+	// wait for game load
+	while (!me.inTown && !me.gameReady) {
+		delay(200);
+		if (getLocation() !== null) {
+			D2Bot.restart();
+		}
+	}
+	delay((me.ping||0) * 2 + 200);
+
+	// Get items what we need to drop.
+	for (i = 0; i < jobs.length; i++) {
+		dropReq = JSON.parse(jobs[i]);
+
+		if (dropReq.charName === me.charname) {
+			itemsToDrop.push(dropReq.dropit);
+			itemsIDs.push(dropReq.itemID);
+			itemSkin.push(dropReq.skin);
+			jobs.splice(i, 1);
+			i--;
+			dropName = dropReq.requester;
+			//dropValue = dropReq.fgvalue;
+		}
+	}
+
+    //dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items. VALUE: " + dropValue);
+    dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items.");
+	//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
+	D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
+	delay((me.ping||0) * 2 + 200);
+
+	// create array of our items.
+	while (!items) {
+		items = me.findItems();
+		if (getLocation() !== null) {
+			D2Bot.restart();
+		}
+
+		delay(100);
+	}
+	delay((me.ping||0) * 2 + 200);
+
+	// open stash
+	var retryC = 0;
+
+	while (!Town.openStash()) {
+		delay((me.ping||0) * 2 + 200);
+		sendPacket(1, 0x4f, 4, 0x12, 2, 0); // terminate stash state
+
+		retryC++;
+
+		if (retryC > 10) D2Bot.restart();
+
+		if (getLocation() !== null) {
+			D2Bot.restart();
+		}
+	}
+	delay((me.ping||0) * 2 + 200);
+
+	// find and drop them
+/*	ItemLoop:
+	for (i = 0; i < items.length; i++) {
+		// update status to how many left
+		//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
+		D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
+
+		// all items dropped. no need to go through all of them anymore.
+		if(itemsToDrop.length === 0) {
+			break ItemLoop;
+		}
+
+		// get index if item to drop.
+		var checksum = md5(items[i].description);
+		if (!checksum) {
+            dropLog(dropName, "Failed to calculate checksum for " + items[i].name);
+            continue ItemLoop;
+		}
+
+		index = itemsToDrop.indexOf(checksum);
+
+		if (index !== -1 && itemSkin[index] === ItemDB.getImage(items[i])) { // item match and have requested skin.
+			itemRead = items[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
+
+			for(x = 1; x < 4; x++) { // retry if fail
+				if (items[i].drop()) {
+					// remove it from drop array and add to success array
+					itemsIDs.splice(index, 1); // remove item id
+					itemSkin.splice(index, 1); // remove skin
+					current = itemsToDrop.splice(index, 1); // remove that item from array
+
+					// push into sucessfull TODO: change checksum to item id ?
+					successfulDrops.push(current);
+
+					// log it
+					//D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
+					D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]", 5);
+					//dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]");
+					dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]");
+
+					// go to next item
+					continue ItemLoop;
+				}
+                dropLog(dropName, "Failed to drop item " + itemRead + " (" + x + " retry)");
+				delay((me.ping||0) * 2 + 200);
+
+				if(getLocation() !== null) {
+					D2Bot.restart();
+				}
+			}
+		}
+
+		if(getLocation() !== null) {
+			D2Bot.restart();
+		}
+
+		delay(30);
+	}
+*/
+	seekCount = itemsToDrop.length;
+	findList = itemsToDrop.slice(0);
+
+	for (i = 0; i < items.length; i++) {
+		// update status to how many left
+		//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
+		D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
+
+		// all items found. no need to go through all of them anymore.
+		if (findList.length === 0) {
+			break;
+		}
+
+		// get index of item to drop.
+		var checksum = md5(items[i].description);
+
+		if (!checksum) {
+            dropLog(dropName, "Failed to calculate checksum for " + items[i].name);
+            continue;
+		}
+
+		index = findList.indexOf(checksum);
+
+		if (index !== -1 && itemSkin[index] === ItemDB.getImage(items[i])) { // item match and have requested skin.
+			itemsIDs.splice(index, 1); // remove item id
+			itemSkin.splice(index, 1); // remove skin
+			findList.splice(index, 1); // remove found
+
+			dropList.push(copyUnit(items[i]));
+			checkSums.push(checksum);
+		}
+
+		delay(1);
+	}
+
+	print("Found " + dropList.length + "/" + seekCount + " items to drop");
+	preDropCount = me.itemcount;
+
+DropLoop:
+	for (i = 0; i < dropList.length; i++) {
+		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
+
+		index = itemsToDrop.indexOf(checkSums[i]);
+
+		for (x = 1; x < 4; x++) {
+			if (usePackets ? Packet.dropItem(dropList[i]) : dropList[i].drop()) {
+				// remove it from drop array and add to success array
+				current = itemsToDrop.splice(index, 1); // remove that item from array
+
+				// push into sucessfull TODO: change checksum to item id ?
+				successfulDrops.push(current);
+
+				// log it
+				//D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
+				D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]", 5);
+				//dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]");
+				dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]");
+
+				continue DropLoop;
+			}
+
+			dropLog(dropName, "Failed to drop item " + itemRead + " (" + x + " retry)");
+			delay((me.ping||0) * 2 + 200);
+
+			if (getLocation() !== null) {
+				D2Bot.restart();
+			}
+		}
+	}
+
+	// if any of requested items is dropped - remove them from db.
+	//if (successfulDrops.length > 0 && itemsToDrop.length == 0) {
+	//	while (!ItemDB.init(successfulDrops)) {
+	//		delay(100);
+	//	}
+	//}
+
+	tick = getTickCount();
+
+	while (getTickCount() - tick < 2000) {
+		failedCount = dropList.length - (preDropCount - me.itemcount);
+		delay(200);
+
+		if (failedCount === 0) {
+			break;
+		}
+	}
+
+	if (failedCount > 0) {
+		D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + failedCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]", 9);
+		dropLog(dropName, "[ failed: \"" + failedCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
+	}
+
+	D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + (preDropCount - me.itemcount) + "/" + seekCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]", 4);
+	// if (itemsToDrop.length > 0) {
+		// D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]", 9);
+		// dropLog(dropName, "[ failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
+	// }
+
+	MuleLogger.logChar();
+
+	//logFG(dropName, dropValue, successfulDrops.length, itemsToDrop.length);
+
+	return true;
+}
+
+function dropLog(who, info) {
+	if (!who) who = "unknown";
+	if (!info) return false;
+
+	var date = new Date(),
+	h = date.getHours(),
+	m = date.getMinutes(),
+	s = date.getSeconds(),
+	y = date.getFullYear(),
+	mo = date.getMonth()+1,
+	d = date.getDate(),
+	timestamp = "[" + y + "." + (mo < 10 ? "0" + mo : mo) + "." + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "] ";
+
+	var line = timestamp + "<" + me.profile + "> " + info;
+
+	Misc.fileAction("databases/logs/Drops_" + who + ".log", 2, line + "\n");
+	//print("\xFFc;Dropper \xFFc0:: " + info);
+	return true;
+}
+
+function logFG(who, value, success, f) {
+	var date = new Date(),
+	h = date.getHours(),
+	m = date.getMinutes(),
+	s = date.getSeconds(),
+	y = date.getFullYear(),
+	mo = date.getMonth()+1,
+	d = date.getDate(),
+	timestamp = "" + y + "-" + (mo < 10 ? "0" + mo : mo) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "";
+
+	var text = timestamp+","+who+","+value+","+success+","+f;
+
+	Misc.fileAction("databases/logs/FG_Sales.csv", 2, text + "\n");
+	return true;
+}
+
+function main() {
+	debugLog(me.profile);
+	addEventListener('copydata', ReceiveCopyData);
+
+	while (!handle) {
+		delay(100);
+	}
+
+	DataFile.updateStats("handle", handle);
+	D2Bot.init();
+	load("tools/heartbeat.js");
+
+	while (!gameInfo) {
+		D2Bot.requestGameInfo();
+		delay(500);
+	}
+
+	if (gameInfo.error) {
+		delay(200);
+
+		if (!!DataFile.getStats().debugInfo) {
+			gameInfo.crashInfo = DataFile.getStats().debugInfo;
+
+			D2Bot.printToConsole("Crash Info: Script: " + JSON.parse(gameInfo.crashInfo).currScript + " Area: " + JSON.parse(gameInfo.crashInfo).area, 10);
+		}
+
+		ControlAction.timeoutDelay("Crash Delay", StarterConfig.CrashDelay * 1e3);
+		D2Bot.updateRuns();
+	}
+
+	DataFile.updateStats("debugInfo", JSON.stringify({currScript: "none", area: "out of game"}));
+
+	while (true) {
+		while (me.ingame) { // returns true before actually in game so we can't only use this check
+			if (me.gameReady) { // returns false when switching acts so we can't use while
+				if (!ingame) {
+
+					joinRetry = 0;
+					lastGameStatus = "ingame";
+					lastGameName = me.gamename.toLowerCase();
+					ingame = true;
+
+					DataFile.updateStats("runs", gameCount);
+					DropIt();
+
+					if (restartDropper) {
+						while (!getJobs(nextJob.charName, false)) { // Successful drop, remove entry
+							delay(100);
+						}
+
+						D2Bot.updateRuns();
+					}
+				}
+
+				if ((getTickCount() - me.gamestarttime) > StarterConfig.minGameTime * 1000) {
+					if (restartDropper) {
+						D2Bot.restart();
+					} else {
+						quit();
+					}
+				}
+			}
+
+			delay(1000);
+		}
+
+		locationAction();
+		delay(1000);
+	}
+}
+
+function locationAction() {
+	if (me.ingame) {
+		return;
+	}
+
+	var i, string, text, location, quitFromLobby;
+
+	location = getLocation();
+
+MainSwitch:
+	switch (location) {
+	case 0:
+		break;
+	case 1:	// Lobby
+		D2Bot.updateStatus("Lobby");
+
+		if (FTJHandler()) {
+			ControlAction.click(6, 693, 490, 80, 20); // Quit from Lobby
+			break;
+		}
+
+		if (ingame) {
+			while (!getJobs(nextJob.charName, false)) { // Successful drop, remove entry
+				delay(100);
+			}
+
+			D2Bot.updateRuns();
+			lastGameTick = getTickCount();
+			gameCount += 1;
+			lastGameStatus = "ready";
+			ingame = false;
+
+			nextJob = findNextJob();
+			delay(500);
+
+			if (!ControlAction.click(6, 693, 490, 80, 20)) { // Quit from Lobby
+				quitFromLobby = true;
+			}
+
+			break;
+		}
+
+		if (quitFromLobby) {
+			quitFromLobby = false;
+			ControlAction.click(6, 693, 490, 80, 20) // Quit from Lobby retry attempt
+			break;
+		}
+
+		if (!ControlAction.click(6, 652, 469, 120, 20)) { // Join
+			break;
+		}
+
+		if (!locationTimeout(5000, location)) { // in case join button gets bugged
+			if (!ControlAction.click(6, 533, 469, 120, 20)) { // Create
+				break;
+			}
+
+			if (!ControlAction.click(6, 652, 469, 120, 20)) { // Join
+				break;
+			}
+		}
+
+		break;
+	case 2: // Waiting In Line
+		D2Bot.updateStatus("Waiting...");
+		locationTimeout(StarterConfig.WaitInLineTimeout * 1e3, location);
+		ControlAction.click(6, 433, 433, 96, 32);
+
+		break;
+	case 3: // Lobby Chat
+		break;
+	case 4: // Create Game
+		break;
+	case 5: // Join Game
+		D2Bot.updateStatus("Join Game");
+		delay(100);
+
+		if (nextJob && nextJob.gameName !== "") {
+			ControlAction.setText(1, 606, 148, 155, 20, nextJob.gamePass);
+			ControlAction.setText(1, 432, 148, 155, 20, nextJob.gameName);
+
+			if (lastGameStatus === "pending" || (gameInfo.error && DataFile.getStats().gameName === jobs[0].gameName)) {
+				D2Bot.printToConsole("Failed to join game");
+				ControlAction.timeoutDelay("Join Delay", StarterConfig.JoinDelay * 1e3);
+				D2Bot.updateRuns();
+				delay(200);
+			}
+
+			delay(2000 + Math.floor(Math.random() * 500));
+			print("\xFFc;Dropper \xFFc0:: Joining game " + nextJob.gameName);
+
+			me.blockMouse = true;
+
+			DataFile.updateStats("gameName", nextJob.gameName);
+			ControlAction.click(6, 594, 433, 172, 32);
+
+			me.blockMouse = false;
+
+			lastGameStatus = "pending";
+			joinRetry++;
+			print ("setting JoinRetry to " + joinRetry);
+			locationTimeout(15000, location);
+
+		}
+
+		break;
+	case 6: // Ladder
+		break;
+	case 7: // Channel List
+		break;
+	case 18: // D2 Splash
+	case 8: // Main Menu
+	case 9: // Login
+		D2Bot.updateStatus("Waiting for Jobs");
+
+		while (jobs.length === 0) {
+			getJobs(false, false);
+			delay(500);
+		}
+
+		nextJob = findNextJob();
+
+		if (getLocation() === 12 && !getControl(4, 626, 100, 151, 44)) {
+			ControlAction.click(6, 33, 572, 128, 35);
+
+			break;
+		}
+
+		D2Bot.updateStatus("Logging In");
+
+		try {
+			ControlAction.loginAccount(nextJob);
+		} catch (e) {
+			print(e + " " + getLocation());
+		}
+		break;
+	case 12: // Character Select
+		if (!nextJob || (nextJob && nextJob.account !== me.account)) {
+			if (gameInfo.rdBlocker) {
+				D2Bot.restart();
+			}
+
+			ControlAction.click(6, 33, 572, 128, 35); //exit from char screen
+			break;
+		}
+
+		if (ControlAction.findCharacter(nextJob)) {
+			ControlAction.loginCharacter(nextJob);
+		}
+		break;
+	case 10: // Login Error
+		string = "";
+		text = ControlAction.getText(4, 199, 377, 402, 140);
+
+		if (text) {
+			for (i = 0; i < text.length; i += 1) {
+				string += text[i];
+
+				if (i !== text.length - 1) {
+					string += " ";
+				}
+			}
+
+			switch (string) {
+			case getLocaleString(5207):
+				D2Bot.updateStatus("Invalid Password");
+				D2Bot.printToConsole("Invalid Password");
+
+				break;
+			case getLocaleString(5208):
+				D2Bot.updateStatus("Invalid Account");
+				D2Bot.printToConsole("Invalid Account");
+
+				break;
+			case getLocaleString(5202): // cd key intended for another product
+			case getLocaleString(10915): // lod key intended for another product
+				D2Bot.updateStatus("Invalid CDKey");
+				D2Bot.printToConsole("Invalid CDKey: " + gameInfo.mpq, 6);
+				D2Bot.CDKeyDisabled();
+
+				if (gameInfo.switchKeys) {
+					ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+					D2Bot.restart(true);
+				} else {
+					D2Bot.stop();
+				}
+
+				break;
+			case getLocaleString(5199):
+				D2Bot.updateStatus("Disabled CDKey");
+				D2Bot.printToConsole("Disabled CDKey: " + gameInfo.mpq, 6);
+				D2Bot.CDKeyDisabled();
+
+				if (gameInfo.switchKeys) {
+					ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+					D2Bot.restart(true);
+				} else {
+					D2Bot.stop();
+				}
+
+				break;
+			case getLocaleString(10913):
+				D2Bot.updateStatus("Disabled LoD CDKey");
+				D2Bot.printToConsole("Disabled LoD CDKey: " + gameInfo.mpq, 6);
+				D2Bot.CDKeyDisabled();
+
+				if (gameInfo.switchKeys) {
+					ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+					D2Bot.restart(true);
+				} else {
+					D2Bot.stop();
+				}
+
+				break;
+			case getLocaleString(5347):
+				D2Bot.updateStatus("Disconnected");
+				D2Bot.printToConsole("Disconnected");
+				ControlAction.click(6, 335, 412, 128, 35);
+
+				break MainSwitch;
+			default:
+				D2Bot.updateStatus("Login Error");
+				D2Bot.printToConsole("Login Error - " + string);
+
+				if (gameInfo.switchKeys) {
+					ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+					D2Bot.restart(true);
+				} else {
+					D2Bot.stop();
+				}
+
+				break;
+			}
+		}
+
+		ControlAction.click(6, 335, 412, 128, 35);
+
+		while (true) {
+			delay(1000);
+		}
+
+		break;
+	case 11: // Unable To Connect
+		D2Bot.updateStatus("Unable To Connect");
+
+		if (connectFail) {
+			ControlAction.timeoutDelay("Unable to Connect", StarterConfig.UnableToConnectDelay * 6e4);
+
+			connectFail = false;
+		} else {
+			connectFail = true;
+		}
+
+		if (!ControlAction.click(6, 335, 450, 128, 35)) {
+			break;
+		}
+
+		break;
+	case 13: // Realm Down - Character Select screen
+		D2Bot.updateStatus("Realm Down");
+		delay(1000);
+
+		if (!ControlAction.click(6, 33, 572, 128, 35)) {
+			break;
+		}
+
+		updateCount();
+		ControlAction.timeoutDelay("Realm Down", StarterConfig.RealmDownDelay * 6e4);
+		D2Bot.CDKeyRD();
+
+		if (gameInfo.switchKeys && !gameInfo.rdBlocker) {
+			D2Bot.printToConsole("Realm Down - Changing CD-Key");
+			ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+			D2Bot.restart(true);
+		} else {
+			D2Bot.printToConsole("Realm Down - Restart");
+			D2Bot.restart();
+		}
+
+		break;
+	case 14: // Character Select - Disconnected
+		D2Bot.updateStatus("Disconnected");
+		delay(500);
+		ControlAction.click(6, 351, 337, 96, 32);
+
+		break;
+	case 16: // Character Select - Please Wait popup
+		if (!locationTimeout(StarterConfig.PleaseWaitTimeout * 1e3, location)) {
+			ControlAction.click(6, 351, 337, 96, 32);
+		}
+
+		break;
+	case 17: // Lobby - Lost Connection - just click okay, since we're toast anyway
+		delay(1000);
+		ControlAction.click(6, 351, 337, 96, 32);
+
+		break;
+	case 19: // Login - Cdkey In Use
+		D2Bot.printToConsole(gameInfo.mpq + " is in use by " + ControlAction.getText(4, 158, 310, 485, 40), 6);
+		D2Bot.CDKeyInUse();
+
+		if (gameInfo.switchKeys) {
+			ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+			D2Bot.restart(true);
+		} else {
+			ControlAction.timeoutDelay("CD-Key in use", StarterConfig.CDKeyInUseDelay * 6e4);
+			ControlAction.click(6, 335, 450, 128, 35);
+		}
+
+		break;
+	case 20: // Single Player - Select Difficulty
+		break;
+	case 21: // Main Menu - Connecting
+		if (!locationTimeout(StarterConfig.ConnectingTimeout * 1e3, location)) {
+			ControlAction.click(6, 330, 416, 128, 35);
+		}
+
+		break;
+	case 22: // Login - Invalid Cdkey (classic or xpac)
+		text = ControlAction.getText(4, 162, 270, 477, 50);
+		string = "";
+
+		if (text) {
+			for (i = 0; i < text.length; i += 1) {
+				string += text[i];
+
+				if (i !== text.length - 1) {
+					string += " ";
+				}
+			}
+		}
+
+		switch (string) {
+		case getLocaleString(10914):
+			D2Bot.printToConsole(gameInfo.mpq + " LoD key in use by " + ControlAction.getText(4, 158, 310, 485, 40), 6);
+			D2Bot.CDKeyInUse();
+
+			if (gameInfo.switchKeys) {
+				ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+				D2Bot.restart(true);
+			} else {
+				ControlAction.click(6, 335, 450, 128, 35);
+				ControlAction.timeoutDelay("LoD key in use", StarterConfig.CDKeyInUseDelay * 6e4);
+			}
+
+			break;
+		default:
+			if (gameInfo.switchKeys) {
+				D2Bot.printToConsole("Invalid CD-Key");
+				ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+				D2Bot.restart(true);
+			} else {
+				ControlAction.click(6, 335, 450, 128, 35);
+				ControlAction.timeoutDelay("Invalid CD-Key", StarterConfig.CDKeyInUseDelay * 6e4);
+			}
+
+			break;
+		}
+
+		break;
+	case 23: // Character Select - Connecting
+	case 42: // Empty character screen
+		string = "";
+		text = ControlAction.getText(4, 45, 318, 531, 140);
+
+		if (text) {
+			for (i = 0; i < text.length; i += 1) {
+				string += text[i];
+
+				if (i !== text.length - 1) {
+					string += " ";
+				}
+			}
+
+			if (string === getLocaleString(11161)) { // CDKey disabled from realm play
+				D2Bot.updateStatus("Realm Disabled CDKey");
+				D2Bot.printToConsole("Realm Disabled CDKey: " + gameInfo.mpq, 6);
+				D2Bot.CDKeyDisabled();
+
+				if (gameInfo.switchKeys) {
+					ControlAction.timeoutDelay("Key switch delay", StarterConfig.SwitchKeyDelay * 1000);
+					D2Bot.restart(true);
+				} else {
+					D2Bot.stop();
+				}
+			}
+		}
+
+		if (!locationTimeout(StarterConfig.ConnectingTimeout * 1e3, location)) {
+			ControlAction.click(6, 33, 572, 128, 35);
+
+			if (gameInfo.rdBlocker) {
+				D2Bot.restart();
+			}
+		}
+
+		break;
+	case 24: // Server Down - not much to do but wait..
+		break;
+	case 25: // Lobby - Please Wait
+		if (!locationTimeout(StarterConfig.PleaseWaitTimeout * 1e3, location)) {
+			ControlAction.click(6, 351, 337, 96, 32);
+		}
+
+		break;
+	case 26: // Lobby - Game Name Exists
+		break;
+	case 27: // Gateway Select
+		ControlAction.click(6, 436, 538, 96, 32);
+
+		break;
+	case 28: // Lobby - Game Does Not Exist
+		D2Bot.printToConsole("Game doesn't exist");
+
+		lastGameStatus = "ready";
+		locationTimeout(StarterConfig.GameDoesNotExistTimeout * 1e3, location);
+
+		break;
+	case 38: // Game is full
+		D2Bot.printToConsole("Game is full");
+		//ControlAction.click(6, 652, 469, 120, 20);
+
+		lastGameStatus = "ready";
+		locationTimeout(15000, location);
+
+		break;
+	case 30: // error
+		D2Bot.printToConsole("location 30 error - please report if it doesn't work");
+		if (!locationTimeout(StarterConfig.PleaseWaitTimeout * 1e3, location)) {
+			ControlAction.click(6, 351, 337, 96, 32);
+		}
+
+		break;
+	default:
+		if (location !== undefined) {
+			D2Bot.printToConsole("Unhandled location " + location);
+			//takeScreenshot();
+			delay(500);
+			D2Bot.restart();
+		}
+
+		break;
+	}
+}
