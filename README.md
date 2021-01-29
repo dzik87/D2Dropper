@@ -3,10 +3,10 @@
 01. Download [ItemManagerServer.zip](https://github.com/dzik87/D2Dropper/releases/download/1.0.0/ItemManagerServer.zip) and unzip everything to C drive.
 02. Navigate to C drive and install 01.vcredist_x862012.exe
 03. Open start menu type in CMD and run it as Administrator.
-04. on CMD consoole type in `cd /`
-05. type in `02` then press tab and enter
-06. type in `03` then press tab and enter
-07. type in "exit" and press enter
+04. In command line console type in `cd /` and press enter
+05. Type in `02` then press tab and enter
+06. Type in `03` then press tab and enter
+07. Type in "exit" and press enter
 08. Download this repository with [Download ZIP](https://github.com/dzik87/D2Dropper/archive/main.zip) option
 09. Navigate to main folder select all files inside and unzip them to `C:\Apache\htdocs`
 
