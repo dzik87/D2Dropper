@@ -1,0 +1,5 @@
+{"keyword": "tal,death,mask", "occu": "43"}
+{"keyword": "adjudication,amulet", "occu": "43"}
+{"keyword": "crystal,eye", "occu": "43"}
+{"keyword": "guardianship,plate", "occu": "43"}
+{"keyword": "mesh,belt,15", "occu": "43"}

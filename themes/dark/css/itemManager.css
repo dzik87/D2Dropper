@@ -1,0 +1,257 @@
+/* add space on top and display background */
+body {
+	padding-top: 70px;
+    background-image: url('../images/background.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center; 
+		background-color: #000;
+}
+
+select {
+	background-color: #000;
+	border: 1px solid #333;
+}
+
+
+
+/* use custom font in navbar welcome message */
+h1, h2, h3, .navbar-brand  {
+	font-family: Exocet, Arial, sans-serif;
+	font-weight: bold;
+}
+
+.exocet {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 20px;
+}
+
+.rune {
+	font-family: Exocet, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	color: #D08420;
+}
+
+.dropdisplay {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 14px;
+	padding-left: 30px;
+}
+
+.diablo {
+	font-size: 14px;
+}
+
+.container {
+	width: 95%;
+}
+
+.col-md-3 {
+	padding-left: 0px;
+	padding-right: 20px;
+}
+
+.col-md-9 {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.markall {
+	padding-left: 10px;
+	padding-right: 10px;
+	margin-left: 5px;
+	margin-right: 5px;
+	width: 100px;
+	height: 31px;
+	font-family: Arial;
+	font-size: 13px;
+	display: inline-block;
+}
+
+.label {
+	width: 40px;
+	font-family: Arial;
+	font-size: 15px;
+}
+.top {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 15px;
+	font-weight: normal;
+	text-decoration: none;
+	color: #fff;
+	padding-left: 10px;
+	padding-right: 10px;
+}
+
+.list-group-item {
+	padding: 3px 15px;
+}
+
+.mainmenu,
+.mainmenu:active,
+.mainmenu:link,
+.mainmenu:visited,
+.mainmenu:hover {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 18px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #fff;
+	padding-left: 0px;
+	cursor: pointer; 
+	cursor: hand;
+}
+
+a.confirm,
+a.confirm:active,
+a.confirm:link,
+a.confirm:visited,
+a.confirm:hover {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 36px;
+	font-weight: bold;
+	text-decoration: none;
+	color: #ff0000;
+	padding-left: 0px;
+	cursor: pointer; 
+	cursor: hand;
+}
+
+div.confirm,
+div.confirm:active,
+div.confirm:link,
+div.confirm:visited,
+div.confirm:hover {
+	font-size: 16px;
+	text-decoration: none;
+	color: #fff;
+	padding-left: 0px;
+	cursor: pointer;
+	cursor: hand;
+}
+
+.submenu,
+.submenu:active,
+.submenu:link,
+.submenu:visited,
+.submenu:hover {
+	font-family: Exocet, Arial, sans-serif;
+	font-size: 18px;
+	font-weight: normal;
+	text-decoration: none;
+	color: #999;
+	padding-left: 10px;
+}
+
+.selecteditem {
+	background-color:#000;
+}
+
+
+/* Include Diablo 2 Fonts */
+@font-face {
+  font-family: "Diablo";
+  src: url('../../../fonts/avqest.ttf')  format('truetype');
+}
+
+@font-face {
+  font-family: "Exocet";
+  src: url('../../../fonts/exocet-blizzard-light.eot');
+  src: url('../../../fonts/exocet-blizzard-light.eot?#iefix') format('embedded-opentype'),
+       url('../../../fonts/exocet-blizzard-light.woff') format('woff'),
+       url('../../../fonts/exocet-blizzard-light.ttf')  format('truetype'),
+       url('http://us.battle.net/d3/static/fonts/exocet/exocet-blizzard-light.svg#svgExocetReaper') format('svg');
+}
+
+/* Color Codes class */
+.colorb {color: #ffffff;}
+.color0 {color: #C4C4C4;}		/* WHITE */
+.color1 {color: #B04434;}		/* RED */
+.color2 {color: #18FC00;}		/* SET */
+.color3 {color: #787CE7;}		/* MAGIC */
+.color4 {color: #948064;}		/* UNIQUE */
+.color5 {color: #505050;}		/* DARK GRAY */
+.color6 {color: WhiteSmoke;}
+.color7 {color: WhiteSmoke;}
+.color8 {color: #D08420;}		/* CRAFT */
+.color9 {color: #D8B864;}		/* RARE */
+
+.table {
+  margin-bottom: 2px;
+}
+.table > thead > tr > th,
+.table > tbody > tr > th,
+.table > tfoot > tr > th,
+.table > thead > tr > td,
+.table > tbody > tr > td,
+.table > tfoot > tr > td {
+  padding: 8px;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.loading-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 10;
+}
+.loader
+{
+    display: none;
+    width:200px;
+    height: 200px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    text-align:center;
+    margin-left: -100px;
+    margin-top: -100px;
+    z-index:2;
+    overflow: auto;
+}
+
+.uploading-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  z-index: 10;
+}
+div.upload-progress
+{
+    display: none;
+    width:700px;
+    height: 30px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    text-align:center;
+    margin-left: -350px;
+    margin-top: -50px;
+    z-index:2;
+    overflow: auto;
+}
+
+#textoutput {
+	padding-left: 30px;
+	padding-right: 30px;
+	padding-top: 20px;
+	padding-bottom: 20px;
+}
+
+/* tables */
+table.table-hover thead tr .header {
+	background-image: url(../../images/bg.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.table-hover thead tr .headerSortUp {
+	background-image: url(../../images/asc.gif);
+}
+table.table-hover thead tr .headerSortDown {
+	background-image: url(../../images/desc.gif);
+}
+

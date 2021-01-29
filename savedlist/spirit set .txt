@@ -1,0 +1,5 @@
+{"keyword": "thul rune", "occu": "10"}
+{"keyword": "ort rune", "occu": "10"}
+{"keyword": "amn rune", "occu": "10"}
+{"keyword": "tal rune", "occu": "10"}
+{"keyword": "hel rune", "occu": "10"}

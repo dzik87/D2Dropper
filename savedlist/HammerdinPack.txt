@@ -1,0 +1,14 @@
+{"keyword": "large,charm,99", "occu": "1"}
+{"keyword": "shako", "occu": "1"}
+{"keyword": "mara", "occu": "1"}
+{"keyword": "heart of the oak", "occu": "1"}
+{"keyword": "Herald,of,Zakarum", "occu": "1"}
+{"keyword": "chance guards,40", "occu": "1"}
+{"keyword": "nagel,30", "occu": "2"}
+{"keyword": "Tal,Ras,mesh,belt,15", "occu": "1"}
+{"keyword": "war trav,45", "occu": "1"}
+{"keyword": "call to arms", "occu": "1"}
+{"keyword": "spirit,paladin", "occu": "1"}
+{"keyword": "Ethereal,insight", "occu": "1"}
+{"keyword": "anda,demonhead", "occu": "1"}
+{"keyword": "Ethereal,duriel,", "occu": "1"}

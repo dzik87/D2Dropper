@@ -1,0 +1,2 @@
+{"keyword": "Ber rune", "occu": "2"}
+{"keyword": "Flawless Sapphire", "occu": "1"}

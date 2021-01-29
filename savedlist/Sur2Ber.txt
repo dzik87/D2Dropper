@@ -1,0 +1,2 @@
+{"keyword": "sur rune", "occu": "2"}
+{"keyword": "Flawless Amethyst", "occu": "1"}

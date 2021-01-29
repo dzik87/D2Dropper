@@ -1,0 +1,20 @@
+{"keyword": "tal,death,mask", "occu": "1"}
+{"keyword": "adjudication,amulet", "occu": "1"}
+{"keyword": "crystal,eye", "occu": "1"}
+{"keyword": "guardianship,plate", "occu": "1"}
+{"keyword": "mesh,belt,15", "occu": "1"}
+{"keyword": "storm,monarch", "occu": "1"}
+{"keyword": "nagel,30", "occu": "2"}
+{"keyword": "chain,gloves", "occu": "1"}
+{"keyword": "war,trav", "occu": "1"}
+{"keyword": "large charm,unid", "occu": "1"}
+{"keyword": "amn rune", "occu": "1"}
+{"keyword": "ral rune", "occu": "1"}
+{"keyword": "mal rune", "occu": "1"}
+{"keyword": "ist rune", "occu": "1"}
+{"keyword": "ohm rune", "occu": "1"}
+{"keyword": "spirit,monarch", "occu": "1"}
+{"keyword": "(5),crystal,sword", "occu": "1"}
+{"keyword": "insight", "occu": "1"}
+{"keyword": "cuirass", "occu": "1"}
+{"keyword": "anda", "occu": "1"}

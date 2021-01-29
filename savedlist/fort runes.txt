@@ -1,0 +1,4 @@
+{"keyword": "el rune", "occu": "1"}
+{"keyword": "sol rune", "occu": "1"}
+{"keyword": "dol rune", "occu": "1"}
+{"keyword": "lo rune", "occu": "1"}

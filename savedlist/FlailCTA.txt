@@ -1,0 +1,6 @@
+{"keyword": "amn rune", "occu": "5"}
+{"keyword": "ral rune", "occu": "5"}
+{"keyword": "mal rune", "occu": "5"}
+{"keyword": "ist rune", "occu": "5"}
+{"keyword": "ohm rune", "occu": "5"}
+{"keyword": "(5),flail", "occu": "5"}
