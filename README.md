@@ -4,9 +4,9 @@
 02. Navigate to C drive and install 01.vcredist_x862012.exe
 03. Open start menu type in CMD and run it as Administrator.
 04. In command line console type in `cd /` and press enter
-05. Type in `02` then press tab and enter
-06. Type in `03` then press tab and enter
-07. Type in "exit" and press enter
+05. Type in `02.tradelistfix.bat` then enter
+06. Type in `03.install.bat` then enter
+07. Type in `exit` and press enter
 08. Download this repository with [Download ZIP](https://github.com/dzik87/D2Dropper/archive/main.zip) option
 09. Navigate to main folder select all files inside of `html` folder and unzip them to `C:\Apache\htdocs`
 
