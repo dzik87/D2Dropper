@@ -8,7 +8,7 @@
 06. Type in `03` then press tab and enter
 07. Type in "exit" and press enter
 08. Download this repository with [Download ZIP](https://github.com/dzik87/D2Dropper/archive/main.zip) option
-09. Navigate to main folder select all files inside of 'html' folder and unzip them to `C:\Apache\htdocs`
+09. Navigate to main folder select all files inside of `html` folder and unzip them to `C:\Apache\htdocs`
 
 # Adding Admin User and Resellers:
 01. Navigate to [this page](http://aspirine.org/htpasswd_en.html)
