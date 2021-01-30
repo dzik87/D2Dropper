@@ -335,7 +335,7 @@ function DropIt() {
 		index = itemsToDrop.indexOf(checksum);
 
 		if (index !== -1 && itemSkin[index] === ItemDB.getImage(items[i])) { // item match and have requested skin.
-			itemRead = items[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
+			itemRead = items[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|Ã¿)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
 
 			for(x = 1; x < 4; x++) { // retry if fail
 				if (items[i].drop()) {
@@ -412,7 +412,7 @@ function DropIt() {
 
 DropLoop:
 	for (i = 0; i < dropList.length; i++) {
-		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
+		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|Ã¿)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
 
 		index = itemsToDrop.indexOf(checkSums[i]);
 
