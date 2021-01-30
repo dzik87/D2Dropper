@@ -5,7 +5,7 @@
 *	@thankYou		Richard for inspiring me,
 					Gagget for all SQLite explains,
 					Adhd for password find function.
-*	@version		2016/02/04
+*	@version		2021/01/30
 **/
 
 var ItemDB = {
@@ -44,11 +44,11 @@ var ItemDB = {
 	init: function (drop) {
 		var success = true;
 		if (this.createDB()) {
-			print("\xFFc8ItemDB\xFFc0 :: New database created!");
+			print("ItemDB :: New database created!");
 		}
 		try {
 			if(!drop)
-				print("\xFFc8ItemDB\xFFc0 :: Starting database connection");
+				print("ItemDB :: Starting database connection");
 			
 			this.tick 		= getTickCount();
 			
@@ -67,11 +67,27 @@ var ItemDB = {
 		}
 		
 		if(!drop) {
-			print("\xFFc8ItemDB\xFFc0 :: Closing database connection after: " + ((getTickCount() - this.tick) / 1000).toFixed(2) + "s");
+			print("ItemDB :: Closing database connection after: " + ((getTickCount() - this.tick) / 1000).toFixed(2) + "s");
 			this.log(this.count + " items logged in " + ((getTickCount() - this.tick) / 1000).toFixed(2) + "s");
 		}
 		
 		return success;			
+	},
+	
+	deleteChar: function(a) {
+		var success = true;
+		try {
+			this.DBConnect	= new SQLite(this.DB, true);
+			this.DBConnect.execute("BEGIN TRANSACTION;");
+			this.DBConnect.execute("DELETE FROM muleChars WHERE charName = '" + a + "';")
+			this.DBConnect.execute("COMMIT;");			
+		} catch (e) { 
+			success = false;
+			this.log(e);
+		} finally {
+			this.DBConnect.close();
+		}		
+		return success;		
 	},
 	
 	createDB: function () {
@@ -131,7 +147,7 @@ var ItemDB = {
 					delay(500);
 			}
 			accID = this.DBConnect.lastRowId;
-			print("\xFFc8ItemDB\xFFc0 :: Added account \"" + me.account + "\" into database with ID: " + accID);
+			print("ItemDB :: Added account \"" + me.account + "\" into database with ID: " + accID);
 		}
 		
 		if (!accPW && this.mulePass != accPW && update) {
@@ -169,7 +185,7 @@ var ItemDB = {
 				delay(500);
 			}
 			charID = this.DBConnect.lastRowId;
-			print("\xFFc8ItemDB\xFFc0 :: added character \"" + me.name + "\" into database with ID: " + charID);
+			print("ItemDB :: added character \"" + me.name + "\" into database with ID: " + charID);
 		}
 		
 		return charID;	
@@ -204,7 +220,7 @@ var ItemDB = {
 				
 				this.log("dropped " + dropitam + " in " + me.gamename + "//" + me.gamepassword);
 			}	
-			print("\xFFc8ItemDB\xFFc0 :: removed " + dd.length + " items from database.");
+			print("ItemDB :: removed " + dd.length + " items from database.");
 			return true;
 		}
 		//remove items from DB with your charID to avoid double entrys
@@ -625,7 +641,7 @@ var ItemDB = {
 	deleteCharacter: function(obj) {
 		var success = true;
 		try {
-			print("\xFFc8ItemDB\xFFc0 :: Starting database connection");
+			print("ItemDB :: Starting database connection");
 			
 			this.tick 		= getTickCount();
 			
@@ -635,7 +651,7 @@ var ItemDB = {
 			this.DBConnect.execute("DELETE FROM muleChars WHERE charName = '" + obj.charName + "';");
 			this.DBConnect.execute("COMMIT;");
 			
-			print("\xFFc8ItemDB\xFFc0 :: Starting database connection");
+			print("ItemDB :: Starting database connection");
 		} catch (e) { 
 			success = false;
 			this.log(e);

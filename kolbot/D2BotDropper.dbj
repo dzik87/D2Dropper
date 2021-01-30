@@ -10,7 +10,7 @@ var StarterConfig = {
 	CDKeyInUseDelay: 5, // Minutes to wait before connecting again if CD-Key is in use. SwitchKeys overrides this!
 	ConnectingTimeout: 20, // Seconds to wait before cancelling the 'Connecting...' screen
 	PleaseWaitTimeout: 30, // Seconds to wait before cancelling the 'Please Wait...' screen
-	WaitInLineTimeout: 60, // Seconds to wait before cancelling the 'Waiting in Line...' screen
+	WaitInLineTimeout: 6000, // Seconds to wait before cancelling the 'Waiting in Line...' screen
 	GameDoesNotExistTimeout: 15 // Seconds to wait before cancelling the 'Game does not exist.' screen
 };
 
@@ -247,7 +247,7 @@ function FTJHandler() {
 
 function DropIt() {
 	var dropReq, items, i, x, q, dropName, itemRead, index, current, dropValue, preDropCount, tick, failedCount, seekCount,
-		successfulDrops = [],
+		successfuldrop = [],
 		itemsToDrop = [],
 		itemsIDs = [],
 		itemSkin = [],
@@ -275,14 +275,14 @@ function DropIt() {
 			jobs.splice(i, 1);
 			i--;
 			dropName = dropReq.requester;
-			//dropValue = dropReq.fgvalue;
+			dropValue = dropReq.fgvalue;
 		}
 	}
 
-    //dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items. VALUE: " + dropValue);
-    dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items.");
-	//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
-	D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
+    dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items. VALUE: " + dropValue);
+    //dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items.");
+	D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
+	//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
 	delay((me.ping||0) * 2 + 200);
 
 	// create array of our items.
@@ -313,72 +313,14 @@ function DropIt() {
 	}
 	delay((me.ping||0) * 2 + 200);
 
-	// find and drop them
-/*	ItemLoop:
-	for (i = 0; i < items.length; i++) {
-		// update status to how many left
-		//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
-		D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
-
-		// all items dropped. no need to go through all of them anymore.
-		if(itemsToDrop.length === 0) {
-			break ItemLoop;
-		}
-
-		// get index if item to drop.
-		var checksum = md5(items[i].description);
-		if (!checksum) {
-            dropLog(dropName, "Failed to calculate checksum for " + items[i].name);
-            continue ItemLoop;
-		}
-
-		index = itemsToDrop.indexOf(checksum);
-
-		if (index !== -1 && itemSkin[index] === ItemDB.getImage(items[i])) { // item match and have requested skin.
-			itemRead = items[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
-
-			for(x = 1; x < 4; x++) { // retry if fail
-				if (items[i].drop()) {
-					// remove it from drop array and add to success array
-					itemsIDs.splice(index, 1); // remove item id
-					itemSkin.splice(index, 1); // remove skin
-					current = itemsToDrop.splice(index, 1); // remove that item from array
-
-					// push into sucessfull TODO: change checksum to item id ?
-					successfulDrops.push(current);
-
-					// log it
-					//D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
-					D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]", 5);
-					//dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]");
-					dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]");
-
-					// go to next item
-					continue ItemLoop;
-				}
-                dropLog(dropName, "Failed to drop item " + itemRead + " (" + x + " retry)");
-				delay((me.ping||0) * 2 + 200);
-
-				if(getLocation() !== null) {
-					D2Bot.restart();
-				}
-			}
-		}
-
-		if(getLocation() !== null) {
-			D2Bot.restart();
-		}
-
-		delay(30);
-	}
-*/
 	seekCount = itemsToDrop.length;
 	findList = itemsToDrop.slice(0);
 
 	for (i = 0; i < items.length; i++) {
 		// update status to how many left
-		//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
-		D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
+		D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
+
+		//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
 
 		// all items found. no need to go through all of them anymore.
 		if (findList.length === 0) {
@@ -416,19 +358,26 @@ DropLoop:
 
 		index = itemsToDrop.indexOf(checkSums[i]);
 
+		if (dropList[i].location == 7 && !getUIFlag(0x19)) {
+			Town.openStash();
+		}
+
+		Misc.logItem(dropName + " Dropped item " + " for " + dropValue + " FG : ", dropList[i]);
+
 		for (x = 1; x < 4; x++) {
-			if (usePackets ? Packet.dropItem(dropList[i]) : dropList[i].drop()) {
+			if (dropList[i].drop()) {
 				// remove it from drop array and add to success array
 				current = itemsToDrop.splice(index, 1); // remove that item from array
 
 				// push into sucessfull TODO: change checksum to item id ?
-				successfulDrops.push(current);
+				successfuldrop.push(current);
 
 				// log it
-				//D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
-				D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]", 5);
-				//dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]");
-				dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]");
+				D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
+				// FileTools.appendText('databases/D2Update2.txt', me.profile + ":" + dropName + " Dropping " + itemRead + " items in " + me.gamename + " for " + dropValue + "fg" + " %LINE% "  + "\n")
+				//D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]", 5);
+				dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]");
+				//dropLog(dropName, "[ profile: \"" + me.profile + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "]");
 
 				continue DropLoop;
 			}
@@ -441,13 +390,6 @@ DropLoop:
 			}
 		}
 	}
-
-	// if any of requested items is dropped - remove them from db.
-	//if (successfulDrops.length > 0 && itemsToDrop.length == 0) {
-	//	while (!ItemDB.init(successfulDrops)) {
-	//		delay(100);
-	//	}
-	//}
 
 	tick = getTickCount();
 
@@ -465,15 +407,16 @@ DropLoop:
 		dropLog(dropName, "[ failed: \"" + failedCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
 	}
 
-	D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + (preDropCount - me.itemcount) + "/" + seekCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]", 4);
+	D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + (preDropCount - me.itemcount) + "/" + seekCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "/" + me.realm + "\" ]", 4);
+	FileTools.appendText('databases/' + me.profile + ".txt", me.profile + ":" + dropName + " Dropped " + (preDropCount - me.itemcount) + " items in " + me.gamename + "/" + me.realm + "\n")
 	// if (itemsToDrop.length > 0) {
-		// D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]", 9);
+		// D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + " on " + " Realm " + me.realm + "\" ]", 9);
 		// dropLog(dropName, "[ failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
 	// }
 
 	MuleLogger.logChar();
 
-	//logFG(dropName, dropValue, successfulDrops.length, itemsToDrop.length);
+	//logFG(dropName, dropValue, successfuldrop.length, itemsToDrop.length);
 
 	return true;
 }
@@ -493,8 +436,7 @@ function dropLog(who, info) {
 
 	var line = timestamp + "<" + me.profile + "> " + info;
 
-	Misc.fileAction("databases/logs/Drops_" + who + ".log", 2, line + "\n");
-	//print("\xFFc;Dropper \xFFc0:: " + info);
+	Misc.fileAction("databases/logs/drop_" + who + ".log", 2, line + "\n");
 	return true;
 }
 
@@ -512,6 +454,10 @@ function logFG(who, value, success, f) {
 
 	Misc.fileAction("databases/logs/FG_Sales.csv", 2, text + "\n");
 	return true;
+}
+
+function random(min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function main() {
