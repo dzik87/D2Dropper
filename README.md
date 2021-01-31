@@ -79,14 +79,14 @@
 
 ### Enjoy your personal dropper.
 
-# Explaination word
+# After words
 This is my work.
 I make it public because its right thing to do.
-LAZ sucks.
 
 Code is provided as it is.
 Feel free to contribute.
 
-My Discord username: `dzik#2463`
+![Discord](https://img.shields.io/badge/Discord-dzik%232464-orange.svg?style=for-the-badge&logo=discord)
+[![Donate](https://img.shields.io/badge/PayPal-Donate-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KWYLPLQXAAQKS)
 
 ### dzik © 2021
