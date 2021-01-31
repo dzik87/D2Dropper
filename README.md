@@ -1,3 +1,8 @@
+# Stats
+![GitHub last commit](https://img.shields.io/github/last-commit/dzik87/D2Dropper?style=for-the-badge)
+![GitHub all releases](https://img.shields.io/github/downloads/dzik87/D2Dropper/total?style=for-the-badge)
+![GitHub repo size](https://img.shields.io/github/repo-size/dzik87/D2Dropper?style=for-the-badge)
+
 # Dropper Install: 
 
 01. Download [ItemManagerServer.zip](https://github.com/dzik87/D2Dropper/releases/download/1.0.0/ItemManagerServer.zip) and unzip everything to C drive root.
