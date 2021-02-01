@@ -246,12 +246,10 @@ function FTJHandler() {
 }
 
 function DropIt() {
-	var dropReq, items, i, x, q, dropName, itemRead, index, current, dropValue, preDropCount, tick, failedCount, seekCount,
+	var dropReq, items, i, x, q, dropName, itemRead, index, dropValue, preDropCount, tick, failedCount, seekCount,
 		successfuldrop = [],
 		itemsToDrop = [],
-		itemsIDs = [],
-		itemSkin = [],
-		checkSums = [],
+		foundItems = [],
 		findList = [],
 		dropList = [];
 
@@ -269,9 +267,7 @@ function DropIt() {
 		dropReq = JSON.parse(jobs[i]);
 
 		if (dropReq.charName === me.charname) {
-			itemsToDrop.push(dropReq.dropit);
-			itemsIDs.push(dropReq.itemID);
-			itemSkin.push(dropReq.skin);
+			itemsToDrop.push({ checksum: dropReq.dropit, skin: dropReq.skin, itemID: dropReq.itemID });
 			jobs.splice(i, 1);
 			i--;
 			dropName = dropReq.requester;
@@ -335,15 +331,12 @@ function DropIt() {
             continue;
 		}
 
-		index = findList.indexOf(checksum);
+		index = findList.findIndex(toDrop => toDrop.skin === ItemDB.getImage(items[i]) && toDrop.checksum === checksum)
 
-		if (index !== -1 && itemSkin[index] === ItemDB.getImage(items[i])) { // item match and have requested skin.
-			itemsIDs.splice(index, 1); // remove item id
-			itemSkin.splice(index, 1); // remove skin
-			findList.splice(index, 1); // remove found
-
+        if (index !== -1) { // item match and have requested skin.
+            foundItems.push(findList[index])
+            findList.splice(index, 1); // remove found job
 			dropList.push(copyUnit(items[i]));
-			checkSums.push(checksum);
 		}
 
 		delay(1);
@@ -356,8 +349,6 @@ DropLoop:
 	for (i = 0; i < dropList.length; i++) {
 		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
 
-		index = itemsToDrop.indexOf(checkSums[i]);
-
 		if (dropList[i].location == 7 && !getUIFlag(0x19)) {
 			Town.openStash();
 		}
@@ -366,11 +357,9 @@ DropLoop:
 
 		for (x = 1; x < 4; x++) {
 			if (dropList[i].drop()) {
-				// remove it from drop array and add to success array
-				current = itemsToDrop.splice(index, 1); // remove that item from array
-
-				// push into sucessfull TODO: change checksum to item id ?
-				successfuldrop.push(current);
+				// add to success array
+				// TODO: change checksum to item id ?
+				successfuldrop.push(foundItems[i].checksum);
 
 				// log it
 				D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + itemRead + "\" game: \"" + me.gamename + "//" + me.gamepassword + "\" value: " + dropValue + "]", 5);
