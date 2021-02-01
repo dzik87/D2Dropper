@@ -11,7 +11,6 @@
 	$showthat	= "";
 	$itemsDB	= array();
 	$charsIds	= array();
-	$version	= "2017/01/15";
 	
 	if ( isset($_GET["hc"]) AND ($_GET["hc"] > 1 OR !is_numeric($_GET["hc"])) ) { $_GET["hc"] = 1; }
 	if ( isset($_GET["ladder"]) AND ($_GET["ladder"] > 1 OR !is_numeric($_GET["ladder"])) ) { $_GET["ladder"] = 1; }

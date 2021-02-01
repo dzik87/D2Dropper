@@ -135,7 +135,7 @@
 		<div class="row">
 			<div class="panel panel-default text-center">
 				<div class="panel-footer">
-					ItemManager 2016 &copy; dzik (ver. <?php print $version; ?>)
+					ItemManager 2021 &copy; dzik
 					<?php
 						$time = microtime();
 						$time = explode(' ', $time);
@@ -189,7 +189,6 @@
 		var hideid	= [];
 		var droparray = [];
 		$('#<?php print $showthat; ?>').collapse('show');
-		var myVersion="<?php print $version; ?>";
 	</script>
 
 </body>

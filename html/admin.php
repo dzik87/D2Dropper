@@ -150,16 +150,17 @@
 							</li>
 						</ul>
 						<div class="panel-heading">
-							<h1 class="panel-title">DONATION</h1>
+							<h1 class="panel-title">Repository</h1>
 						</div>
 						<ul class="list-group">
 							<li class="list-group-item text-center">
-								<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-								<input type="hidden" name="cmd" value="_s-xclick">
-								<input type="hidden" name="hosted_button_id" value="KWYLPLQXAAQKS">
-								<input type="image" src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal � The safer, easier way to pay online.">
-								<img alt="" border="0" src="https://www.paypalobjects.com/en_GB/i/scr/pixel.gif" width="1" height="1">
-								</form>
+								<br>
+								<a href="https://github.com/dzik87/D2Dropper" target="_blank"><img src="https://img.shields.io/github/last-commit/dzik87/D2Dropper?style=for-the-badge"></a>
+								<br><br>
+								<a href="https://discordapp.com/users/209047731996590080" target="_blank"><img src="https://img.shields.io/badge/Discord-dzik%232464-orange.svg?style=for-the-badge&logo=discord"></a>
+								<br><br>
+								<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KWYLPLQXAAQKS" target="_blank"><img src="https://img.shields.io/badge/PayPal-Donate-blue.svg?style=for-the-badge&logo=paypal"></a>
+								<br><br>
 							</li>
 						</ul>
 					</div>
@@ -180,7 +181,7 @@
 			<div class="col-md-12">
 				<div class="panel panel-default text-center">
 					<div class="panel-footer">
-						ItemManager 2016 &copy; dzik
+						ItemManager 2021 &copy; dzik
 					</div>
 				</div>
 			</div>

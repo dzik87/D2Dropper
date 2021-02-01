@@ -389,27 +389,3 @@ function CheckDrops() {
     setTimeout("CheckDrops()", 5000);
 }
 CheckDrops();
-
-function CheckRevision() {
-    $.ajax({
-        type:'GET',
-        url: 'http://d2.delivery/revision.php?' + user,
-        success: function(data) {
-			data = JSON.parse(data);
-            if (myVersion != data.version) {
-                var head = $("#header");
-                head.html(head.html() + '<span class="pull-right" style="cursor: pointer;" id="changelog" changelog="'+data.changelog+'">New version available: ' + data.version + ' !</span>');
-                $('#changelogLabel').html("Changelog for " + data.version);
-                $('#changes').html(data.changelog);
-                $('#changelog').click(function() {
-                    $('#changelogMod').modal('show');
-                });
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log(errorThrown);
-        }
-    });
-}
-//CheckRevision();
-
