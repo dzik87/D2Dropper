@@ -339,32 +339,10 @@ var ItemDB = {
 
 							break;
 						case "object":
-							if (NTIPAliasStat[n][0] === i) {
-								switch (NTIPAliasStat[n][0]) {
-								case 16:
-								case 17:
-								case 18:
-								case 21:
-								case 22:
-								case 23:
-								case 24:
-								case 31:
-									val = item.getStatEx(NTIPAliasStat[n][0], NTIPAliasStat[n][1]);
-
-									if (val) {
-										dump[n] = val;
-									}
-
-									break;
-								default:
-									if (stats[i][NTIPAliasStat[n][1]]) {
-										dump[n] = stats[i][NTIPAliasStat[n][1]];
-									}
-
-									break;
-								}
+							val = item.getStatEx(NTIPAliasStat[n][0], NTIPAliasStat[n][1]);
+							if (val) {
+								dump[n] = val;
 							}
-
 							break;
 						}
 					}
