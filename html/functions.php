@@ -608,7 +608,7 @@
 		print '</table>';
 	}
 	
-	function getItemsFromDb($charid, $packname) {
+	function getItemsFromDb($charid, $packname = null) {
 		global $inGameColor;
 		$selectinfo = "accountLogin, accountRealm, charName, itemId, itemName, itemType, itemQuality, itemImage, itemDescription, itemMD5, itemLocation, itemColor";
 		
@@ -663,6 +663,7 @@
 					$filterBy	= "";
 					$filterBy2	= "";
 					$orderBy	= "";
+					$orderBy2	= "";
 					$colorF		= "";
 					
 					$limit		= "LIMIT " . (string)$packitems[$i]['occu'];
