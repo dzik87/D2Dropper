@@ -373,7 +373,7 @@ function imgurUpload(img, save, md5) {
 function CheckDrops() {
     $.ajax({
         type:'GET',
-        url: '/countdrops.php',
+        url: 'countdrops.php',
         success: function(data) {
             if (data == 0) {
                 $("#dropCounts").html('');
