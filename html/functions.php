@@ -516,6 +516,9 @@
 				if ($colTwo != "") {
 					$colTwo = $colTwo." sox";
 				}
+				else {
+					$colTwo = "&nbsp;";
+				}
 				if (isset($_POST["itemtype"]) AND ($_POST["itemtype"] == "torch" OR $_POST["itemtype"] == "annihilus")) {
 					$colOne		= checkStat($item["itemId"], "strength");
 					if($colOne == "") {
