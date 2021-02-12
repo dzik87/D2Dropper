@@ -136,31 +136,31 @@
 		
 		foreach ($realms as $realmnum => $realm) {
 			foreach ($types as $typenum => $type) {
-				if(countItems($realmnum, $typenum, false, false)) {
+				if(countChars($realmnum, $typenum, false, false)) {
 					print '<li>';
 					print '<a class="dropdown-toggle" id="'.$realm.''.$type.'" data-toggle="dropdown" href="#"><img src="images/icons/'.$random[rand(0, count($random)-1)].'.ico" width="20" height="20" /> '.$realm.''.$type.' <b class="caret"></b></a>';
 					print '<ul class="dropdown-menu" role="menu" aria-labelledby="'.$realm.''.$type.'">';
-					if(countItems($realmnum, $typenum, "1", false)) {
+					if(countChars($realmnum, $typenum, "1", false)) {
 						print '<li role="presentation" class="disabled"><a role="menuitem" tabindex="-1">Ladder</a></li>';
-						if(countItems($realmnum, $typenum, "1", "0")) {
+						if(countChars($realmnum, $typenum, "1", "0")) {
 							print /** @lang text */
 								'<li role="presentation"><a role="menuitem" tabindex="-1" href="index.php?realm='.$realmnum.'&hc='.$typenum.'&ladder=1&exp=0"><img src="images/classic.png" width="18" height="18" /> Classic</a></li>';
 						}
-						if(countItems($realmnum, $typenum, "1", "1")) {
+						if(countChars($realmnum, $typenum, "1", "1")) {
 							print /** @lang text */
 								'<li role="presentation"><a role="menuitem" tabindex="-1" href="index.php?realm='.$realmnum.'&hc='.$typenum.'&ladder=1&exp=1"><img src="images/expansion.png" width="18" height="18" /> Expansion </a></li>';
 						}
-						if(countItems($realmnum, $typenum, "0", false)) {
+						if(countChars($realmnum, $typenum, "0", false)) {
 							print '<li role="presentation" class="divider"></li>';
 						}
 					}
-					if(countItems($realmnum, $typenum, "0", false)) {
+					if(countChars($realmnum, $typenum, "0", false)) {
 						print '<li role="presentation" class="disabled"><a role="menuitem" tabindex="-1">Non-Ladder</a></li>';
-						if(countItems($realmnum, $typenum, "0", "0")) {
+						if(countChars($realmnum, $typenum, "0", "0")) {
 							print /** @lang text */
 								'<li role="presentation"><a role="menuitem" tabindex="-1" href="index.php?realm='.$realmnum.'&hc='.$typenum.'&ladder=0&exp=0"><img src="images/classic.png" width="18" height="18" /> Classic</a></li>';
 						}
-						if(countItems($realmnum, $typenum, "0", "1")) {
+						if(countChars($realmnum, $typenum, "0", "1")) {
 							print /** @lang text */
 								'<li role="presentation"><a role="menuitem" tabindex="-1" href="index.php?realm='.$realmnum.'&hc='.$typenum.'&ladder=0&exp=1"><img src="images/expansion.png" width="18" height="18" /> Expansion</a></li>';
 						}							
@@ -260,7 +260,7 @@
 		}
 	}
 	
-	function countItems($queryR, $queryHC, $queryLD, $queryEXP) {
+	function getCount($queryR, $queryHC, $queryLD, $queryEXP, $count = NULL) {
 		global $itemsDB;
 		global $noAccess;
 		global $currUser;
@@ -291,9 +291,20 @@
 			if ($queryLD === "0" OR $queryLD === "1") {
 				$tempC = " AND charLadder = ".$queryLD;
 			}
-			
-			$sql = /** @lang text */
-				'SELECT COUNT() AS "count" FROM muleItems LEFT JOIN muleChars ON itemCharId = charId LEFT JOIN muleAccounts ON charAccountId = accountId WHERE accountRealm = '.$queryR.' '.$tempA.' '.$tempB.' '.$tempC.' '.$tempD.'';
+
+			$sql = "";
+			switch (strtolower($count)) {
+					case "chars":
+						$sql = 'SELECT COUNT() AS "count" FROM muleChars LEFT JOIN muleAccounts ON charAccountId = accountId WHERE accountRealm = '.$queryR.' '.$tempA.' '.$tempB.' '.$tempC.' '.$tempD.'';
+						break;
+					case "items":
+						$sql = 'SELECT COUNT() AS "count" FROM muleItems LEFT JOIN muleChars ON itemCharId = charId LEFT JOIN muleAccounts ON charAccountId = accountId WHERE accountRealm = '.$queryR.' '.$tempA.' '.$tempB.' '.$tempC.' '.$tempD.'';
+						break;
+					default:
+						$conn = NULL;
+						return false;
+			}
+
 			$results = $conn->query($sql);
 			$conn = NULL;
 			$itemsDB = $results->fetchAll(PDO::FETCH_ASSOC);
@@ -305,7 +316,15 @@
 			return false;
 		}
 	}
-	
+
+	function countItems($queryR, $queryHC, $queryLD, $queryEXP) {
+		return getCount($queryR, $queryHC, $queryLD, $queryEXP, "items");
+	}
+
+	function countChars($queryR, $queryHC, $queryLD, $queryEXP) {
+		return getCount($queryR, $queryHC, $queryLD, $queryEXP, "chars");
+	}
+
 	function getAccounts() {
 		try {
 			$conn = new PDO('sqlite:ItemDB.s3db') or die("Unable to connect");
