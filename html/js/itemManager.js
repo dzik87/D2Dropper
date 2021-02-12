@@ -22,7 +22,7 @@
         });
 
         // load items into table
-        $("a.submenu").click(function(e){
+        $("li.list-group-item").on("click", "a.submenu", function(e){
             e.preventDefault();
             var url = $(this).attr('href'); //get the link you want to load data from
             $.ajax({
