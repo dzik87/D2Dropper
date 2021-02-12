@@ -86,7 +86,7 @@ I make it public because its right thing to do.
 Code is provided as it is.
 Feel free to contribute.
 
-[![Discord](https://img.shields.io/badge/Discord-dzik%232464-orange.svg?style=for-the-badge&logo=discord)](https://discordapp.com/users/209047731996590080)
+[![Discord](https://img.shields.io/badge/Discord-dzik%232463-orange.svg?style=for-the-badge&logo=discord)](https://discordapp.com/users/209047731996590080)
 [![Donate](https://img.shields.io/badge/PayPal-Donate-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KWYLPLQXAAQKS)
 
 ### dzik © 2021
