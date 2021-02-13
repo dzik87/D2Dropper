@@ -350,11 +350,14 @@
 			$accounts = $results->fetchAll(PDO::FETCH_ASSOC);
 			
 			print '<ul class="list-group">';
+			$charLink = 'chars.php?realm=' . $queryR . '&hc=' . $queryHC . '&ladder=' . $queryLD . '&exp=' . $queryEXP . '&accountid=';
 			
 			foreach ($accounts as $nr => $account) {
-				print '<li class="list-group-item"><a href="javascript:;" class="mainmenu" data-toggle="collapse" data-target="#acc'.$account["accountId"].'">'.$account["accountLogin"].'</a>';
+				print '<li class="list-group-item">';
+				print '<div class="mainmenu" data-toggle="collapse" data-target="#a'.$account["accountId"].'" data-aid="'.$account["accountId"].'" data-link="'.$charLink.$account["accountId"].'">'.$account["accountLogin"].'</div>';
+				print '<div id="a' . $account["accountId"] . '">';
 				getChars($account["accountId"]);
-				print '</li>';
+				print '</div></li>';
 			}
 			
 			print '</ul>';
@@ -390,7 +393,7 @@
 			
 			$classes 	=	array("Amazon", "Sorceress", "Necromancer", "Paladin", "Barbarian", "Druid", "Assassin");
 			
-			print '<ul id="acc'.$accid.'" class="collapse list-unstyled">';
+			print '<ul id="acc'.$accid.'" class="list-unstyled">';
 			
 			foreach ($chars as $nr => $char) {
 				array_push($charsIds, $char["charId"]);
