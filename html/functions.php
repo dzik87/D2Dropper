@@ -356,7 +356,6 @@
 				print '<li class="list-group-item">';
 				print '<div class="mainmenu" data-toggle="collapse" data-target="#a'.$account["accountId"].'" data-aid="'.$account["accountId"].'" data-link="'.$charLink.$account["accountId"].'">'.$account["accountLogin"].'</div>';
 				print '<div id="a' . $account["accountId"] . '">';
-				getChars($account["accountId"]);
 				print '</div></li>';
 			}
 			
