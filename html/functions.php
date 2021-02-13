@@ -729,7 +729,8 @@
 							$query .= " AND NOT (" . $itemLists[$hideList][$i] . ")";
 						}
 					}
-				}				
+				}
+				$query .= " LIMIT " . countItemsOnChar($charid);
 
 				$results = $conn->query($query);
 				
