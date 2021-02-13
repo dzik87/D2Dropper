@@ -729,8 +729,7 @@
 							$query .= " AND NOT (" . $itemLists[$hideList][$i] . ")";
 						}
 					}
-				}
-				$query .= " LIMIT 110";
+				}				
 
 				$results = $conn->query($query);
 				
