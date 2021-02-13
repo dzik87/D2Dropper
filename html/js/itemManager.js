@@ -21,7 +21,7 @@
              $('#tradeListModal').modal('show');
         });
 
-	$("div.mainmenu").on("click", function(e){
+        $("div.mainmenu").on("click", function(e){
             e.preventDefault();
             var url = $(this).data('link');
             var aid = "#a" + $(this).data('aid');
