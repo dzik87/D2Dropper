@@ -21,8 +21,26 @@
              $('#tradeListModal').modal('show');
         });
 
+        $("div.mainmenu").on("click", function(e){
+            e.preventDefault();
+            var url = $(this).data('link');
+            var aid = "#a" + $(this).data('aid');
+            $.ajax({ 
+                type: 'GET',
+                url: url,
+                aid: aid,
+                beforeSend: function(){
+                    $('.loader').show()
+                },
+                success: function(data) {
+                    $(aid).html(data);
+                    $('.loader').hide();
+                }
+            });
+        });    
+
         // load items into table
-        $("a.submenu").click(function(e){
+        $("li.list-group-item").on("click", "a.submenu", function(e){
             e.preventDefault();
             var url = $(this).attr('href'); //get the link you want to load data from
             $.ajax({

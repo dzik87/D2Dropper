@@ -103,7 +103,7 @@
 							// items
 							print '<div class="col-md-9">';
 								print '<div class="panel panel-default" id="itemsoutput">';
-									showCurrentItems();
+									print '&nbsp;';
 								print '</div>';
 							print '</div>';
 						}
