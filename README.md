@@ -36,7 +36,7 @@
 17. Save `config.php` file.
 
 # Testing Page:
-01. Click [here](http://localhost:666)
+01. Click [here](http://127.0.0.1:666/)
 02. Use your login credentials to log in into dropper page.
 03. You should see now your dropper page and be able to use Drop, TradeList and Admin menu.
 
@@ -71,7 +71,7 @@
 04. This will make your current kolbot instance to log into global database
 
 # Dropping Items:
-01. Click [here](http://localhost:666) to open your local dropper webpage
+01. Click [here](http://127.0.0.1:666/) to open your local dropper webpage
 02. Log in.
 03. Pick item(s) what you want to drop.
 04. Use DROP menu to define game name and password.
