@@ -163,6 +163,11 @@
 								<br><br>
 							</li>
 						</ul>
+						<div class="panel-heading">
+							<h1 class="panel-title">Contributors</h1>
+						</div>
+						<ul class="list-group"id="contributors">
+						</ul>
 					</div>
 				</div>
 						
@@ -258,6 +263,30 @@
                 }
             });
 		});
+		
+		function GetContributors() {
+			$.ajax({
+				type:'GET',
+				url: 'https://api.github.com/repos/dzik87/D2Dropper/contributors',
+				dataType: 'JSON',
+				success: function(data) {
+					let str = ""
+					for (u in data) {
+						str += '<li class="list-group-item"><a href="' + data[u].html_url + '" target="_blank" class="mainmenu"><img src="' + data[u].avatar_url + '" width="40">&nbsp;&nbsp;&nbsp;' + data[u].login + '&nbsp;&nbsp;(' + data[u].contributions + ')</a></li>';
+					}
+					//if (data == 0) {
+					$("#contributors").html(str);
+					//} else {
+					//    $("#contributors").html('<div class="diablo" style="margin-left:25px;margin-top:5px;font-weight:bold">Dropping ' + data + ' item(s) in progress...</div>');
+					//}
+				},
+
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.log(errorThrown);
+				}
+			});
+		}
+		GetContributors();
 	</script>
 
     <!-- Tooltipster 3.3.0 -->
