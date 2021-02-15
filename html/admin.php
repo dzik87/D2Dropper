@@ -157,7 +157,7 @@
 								<br>
 								<a href="https://github.com/dzik87/D2Dropper" target="_blank"><img src="https://img.shields.io/github/last-commit/dzik87/D2Dropper?style=for-the-badge"></a>
 								<br><br>
-								<a href="https://discordapp.com/users/209047731996590080" target="_blank"><img src="https://img.shields.io/badge/Discord-dzik%232464-orange.svg?style=for-the-badge&logo=discord"></a>
+								<a href="https://discordapp.com/users/209047731996590080" target="_blank"><img src="https://img.shields.io/badge/Discord-dzik%232463-orange.svg?style=for-the-badge&logo=discord"></a>
 								<br><br>
 								<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KWYLPLQXAAQKS" target="_blank"><img src="https://img.shields.io/badge/PayPal-Donate-blue.svg?style=for-the-badge&logo=paypal"></a>
 								<br><br>
