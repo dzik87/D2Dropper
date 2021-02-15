@@ -292,19 +292,16 @@
     });
 
 
-    // bind item upload to right mouse button
-    $(document).bind("contextmenu",function(e){
+    // attach item upload to right mouse button
+    $(document).on("contextmenu", function(e){
         e.preventDefault();
-        //if (e.button == 2) {
-        //	alert("right click");
-        //}
         //img with background
         var img = $('div.tooltipster-base');
         //img w/o background
-            //img = $('div.tooltipster-content');
-		if (img)
-			imgurUpload(img, false, false);
-
+        //img = $('div.tooltipster-content');
+        if (img.length > 0) {
+            imgurUpload(img, false, false);
+	}
         return false;
     });
 
