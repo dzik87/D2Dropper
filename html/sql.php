@@ -375,7 +375,7 @@
 				print '<th width="*" class="text-center exocet"><strong>Success %</strong></th>';
 				print '<th width="*" class="text-center exocet"><strong>Fg/Item</strong></th>';
 				print '</tr></thead>';
-				
+				SalesStats();
 				print '</table>';
             } else {
 				print '<div class="panel-heading"><h2 class="panel-title text-center">Oops! Something is not ready yet :(</h2></div>';
@@ -705,5 +705,47 @@
 		$hash = base64_encode(sha1($pass, true));
 		$contents = $login . ':{SHA}' . $hash;
 		file_put_contents('.htpasswd', $contents."\n", FILE_APPEND);
+	}
+
+	function SalesStats () {
+		$dir = glob('logs/*');
+		foreach ($dir as $file) {
+			UserSalesStats($file);
+		}
+	}
+	
+	function UserSalesStats ($filename) {
+		// Stats for a user
+		$fg = 0; // FG total
+		$dropa = 0; // Drop Attempts
+		$drops = 0; // Drop Successes
+
+		$fp = @fopen($filename, "rt");
+		if ($fp) {
+			while (($line = fgets($fp)) !== false) {
+				$parts = explode(" ", $line);
+				// Line with the following format
+				// [2012.12.12 12:12:12] <dropper1> Trying to drop 1 items. VALUE: 1
+				if (count($parts) == 10) {
+					$dropa += $parts[6];
+					$fg += $parts[9];
+				}
+				// Otherwise the line should be in this format when it actually dropped something
+				// [2012.12.12 12:12:12] <dropper1> [ profile: "dropper1" dropped: "El Rune" game: "game//pass" value: 1]
+				else if (count($parts) > 10) {
+					$drops += 1;
+				}
+			}
+
+			echo '<tr>';
+			echo '<td>' . substr(basename($filename), 5, -4) . '</td>';
+			echo '<td class="text-center">' . $fg . '</td>';
+			echo '<td class="text-center">' . $dropa . '</td>';
+			echo '<td class="text-center">' . $drops . '</td>';
+			echo '<td class="text-center">' . sprintf('%.3f', strval((($drops / $dropa) * 100))) . '</td>';
+			echo '<td class="text-center">' . sprintf('%.3f', strval($fg / $drops)) . '</td>';
+			echo '</tr>';
+		}
+		fclose($fp);
 	}
 ?>
