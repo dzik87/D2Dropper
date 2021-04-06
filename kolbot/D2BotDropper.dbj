@@ -938,6 +938,13 @@ MainSwitch:
 		locationTimeout(StarterConfig.GameDoesNotExistTimeout * 1e3, location);
 
 		break;
+	case 34: // Email registration
+		if (getControl(6, 415, 412, 128, 35)) {
+			ControlAction.click(6, 415, 412, 128, 35);
+		} else {
+			ControlAction.click(6, 265, 572, 272, 35);
+		}
+		break;
 	case 38: // Game is full
 		D2Bot.printToConsole("Game is full");
 		//ControlAction.click(6, 652, 469, 120, 20);
