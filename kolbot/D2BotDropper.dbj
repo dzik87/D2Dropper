@@ -347,7 +347,7 @@ function DropIt() {
 
 DropLoop:
 	for (i = 0; i < dropList.length; i++) {
-		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
+		itemRead = dropList[i].name.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
 
 		if (dropList[i].location == 7 && !getUIFlag(0x19)) {
 			Town.openStash();
