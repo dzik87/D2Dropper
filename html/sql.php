@@ -579,7 +579,7 @@
 				$itemsDB = $results->fetchAll(PDO::FETCH_ASSOC);
 				$string = array();
 				foreach ($itemsDB as $nr => $item) {
-					array_push($string, ' statsItemId = '.$item["itemId"].' ');
+					array_push($string, ' statsItemId = '.$item["statsItemId"].' ');
 				}
 				if (count($string) === 0) {
 					return 0;

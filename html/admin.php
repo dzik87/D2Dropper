@@ -4,7 +4,7 @@
 <!-- Include Functions -->
 <?php require 'functions.php';
 	if ($_SERVER['PHP_AUTH_USER'] !== $admin or !isset($_SERVER["HTTP_REFERER"])) {
-		die(header ("Location: /index.php"));
+		die(header ("Location: index.php"));
 	}
 	$themeName = getTheme($_SERVER['PHP_AUTH_USER']);
 ?>
