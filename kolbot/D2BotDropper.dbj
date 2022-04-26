@@ -1,4 +1,5 @@
-var StarterConfig = {
+// StarterConfig is depreciated, should switch to newer set-up
+const StarterConfig = {
 	JoinDelay: 5, // Time in seconds to wait before next join attempt
 	SwitchKeyDelay: 5, // Seconds to wait before switching a used/banned key or after realm down
 	minGameTime: 15, // Minimum time to stay in game
@@ -14,7 +15,7 @@ var StarterConfig = {
 	GameDoesNotExistTimeout: 15 // Seconds to wait before cancelling the 'Game does not exist.' screen
 };
 
-var usePackets = true, // Set true to drop using packets
+let usePackets = true, // Set true to drop using packets
 	restartDropper = false; // Set true to restart dropper profile after successful drop, or false to quit to lobby
 
 include("json2.js");
@@ -34,9 +35,9 @@ include("common/CollMap.js");
 include("ItemDB.js");
 include("MuleLogger.js");
 
-load("tools/AreaWatcher.js"); 
+load("tools/AreaWatcher.js");
 
-var i, gameInfo, ingame, handle, nextJob, lastGameTick, connectFail, lastGameName,
+let i, gameInfo, ingame, handle, nextJob, lastGameTick, connectFail, lastGameName,
 	gameCount = DataFile.getStats().runs + 1,
 	lastGameStatus = "ready",
 	joinRetry = 0,
@@ -47,7 +48,7 @@ if (!FileTools.exists("data/" + me.profile + ".json") && !FileTools.exists("data
 }
 
 function locationTimeout(time, location) {
-	var endtime = getTickCount() + time;
+	let endtime = getTickCount() + time;
 
 	while (!me.ingame && getLocation() === location && endtime > getTickCount()) {
 		delay(500);
@@ -64,7 +65,7 @@ function updateCount() {
 	try {
 		login(me.profile);
 	} catch (e) {
-
+		//
 	}
 
 	delay(1000);
@@ -95,7 +96,7 @@ function ReceiveCopyData(mode, msg) {
 }
 
 function findNextJob() {
-	var stuff;
+	let stuff;
 
 	if (jobs.length === 0) {
 		return false;
@@ -117,23 +118,23 @@ function findNextJob() {
 }
 
 function getJobs(removeFinished, ftjhandler) {
-	var writeFile, findChange, i, myJob, info, currentReq, readFile, exists, x,
+	let writeFile, findChange, i, myJob, info, currentReq, readFile, exists, x,
 		ranDelay = Math.floor((Math.random() * 1500) + 1),
 		accountsInProgress = [];
 
 	delay(ranDelay);
 
 	try {
-		findChange = FileTools.readText("databases/drop_"+me.profile+".json");
+		findChange = FileTools.readText("databases/drop_" + me.profile + ".json");
 		if (findChange.length === 0) {
 			return false;
 		}
 
-		readFile = File.open("databases/drop_"+me.profile+".json", FILE_READ, false, true, true);
+		readFile = File.open("databases/drop_" + me.profile + ".json", FILE_READ, false, true, true);
 		info = readFile.readAllLines();
 		readFile.close();
 
-		writeFile = File.open("databases/drop_"+me.profile+".json", FILE_WRITE, false, true, true);
+		writeFile = File.open("databases/drop_" + me.profile + ".json", FILE_WRITE, false, true, true);
 
 	} catch (e) {
 		return false;
@@ -142,7 +143,7 @@ function getJobs(removeFinished, ftjhandler) {
 	if (writeFile && info[0] !== "") {
 
 		// Sort through info and remove completed jobs, find jobs we SHOULDN'T take, and check for unfinished jobs
-		for (i = 0; i < info.length-1; i++) {
+		for (i = 0; i < info.length - 1; i++) {
 			currentReq = JSON.parse(info[i]);
 
 			// Remove all jobs for a specific game name
@@ -176,7 +177,7 @@ function getJobs(removeFinished, ftjhandler) {
 				if (!exists) {
 					currentReq.dropProfile = "";
 					info[i] = JSON.stringify(currentReq);
-				}				 
+				}
 			}
 
 			// Create an array of accounts current jobs are working on so we don't have two profiles logging on same acc
@@ -186,7 +187,7 @@ function getJobs(removeFinished, ftjhandler) {
 		}
 
 		// Second loop looks for new jobs
-		for (i = 0; i < info.length-1; i++) {
+		for (i = 0; i < info.length - 1; i++) {
 			currentReq = JSON.parse(info[i]);
 
 			// Find new drop jobs
@@ -196,7 +197,7 @@ function getJobs(removeFinished, ftjhandler) {
 				}
 
 				// Find other jobs that are for that acc and game
-				if (myJob && currentReq.account === myJob.account && currentReq.gameName === myJob.gameName) { 
+				if (myJob && currentReq.account === myJob.account && currentReq.gameName === myJob.gameName) {
 					print ("\xFFc;Dropper \xFFc0:: Job found: Char: " + currentReq.charName + ", Game: " + currentReq.gameName + ", Acc: " + currentReq.account);
 
 					currentReq.dropProfile = me.profile;
@@ -219,7 +220,7 @@ function getJobs(removeFinished, ftjhandler) {
 }
 
 function FTJHandler() {
-	var i, stuff;
+	let i, stuff;
 
 	if (joinRetry < StarterConfig.JoinRetrys) {
 		return false;
@@ -246,7 +247,7 @@ function FTJHandler() {
 }
 
 function DropIt() {
-	var dropReq, items, i, x, q, dropName, itemRead, index, dropValue, preDropCount, tick, failedCount, seekCount,
+	let dropReq, items, i, x, dropName, itemRead, index, dropValue, preDropCount, tick, failedCount, seekCount,
 		successfuldrop = [],
 		itemsToDrop = [],
 		foundItems = [],
@@ -260,7 +261,7 @@ function DropIt() {
 			D2Bot.restart();
 		}
 	}
-	delay((me.ping||0) * 2 + 200);
+	delay((me.ping || 0) * 2 + 200);
 
 	// Get items what we need to drop.
 	for (i = 0; i < jobs.length; i++) {
@@ -275,11 +276,11 @@ function DropIt() {
 		}
 	}
 
-    dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items. VALUE: " + dropValue);
-    //dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items.");
+	dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items. VALUE: " + dropValue);
+	//dropLog(dropName, "Trying to drop " + itemsToDrop.length + " items.");
 	D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + " for " + dropValue + "fg");
 	//D2Bot.updateStatus("Dropping " + itemsToDrop.length + " items in " + me.gamename + "");
-	delay((me.ping||0) * 2 + 200);
+	delay((me.ping || 0) * 2 + 200);
 
 	// create array of our items.
 	while (!items) {
@@ -290,13 +291,13 @@ function DropIt() {
 
 		delay(100);
 	}
-	delay((me.ping||0) * 2 + 200);
+	delay((me.ping || 0) * 2 + 200);
 
 	// open stash
-	var retryC = 0;
+	let retryC = 0;
 
 	while (!Town.openStash()) {
-		delay((me.ping||0) * 2 + 200);
+		delay((me.ping || 0) * 2 + 200);
 		sendPacket(1, 0x4f, 4, 0x12, 2, 0); // terminate stash state
 
 		retryC++;
@@ -307,7 +308,7 @@ function DropIt() {
 			D2Bot.restart();
 		}
 	}
-	delay((me.ping||0) * 2 + 200);
+	delay((me.ping || 0) * 2 + 200);
 
 	seekCount = itemsToDrop.length;
 	findList = itemsToDrop.slice(0);
@@ -324,18 +325,18 @@ function DropIt() {
 		}
 
 		// get index of item to drop.
-		var checksum = md5(items[i].description);
+		let checksum = md5(items[i].description);
 
 		if (!checksum) {
-            dropLog(dropName, "Failed to calculate checksum for " + items[i].name);
-            continue;
+			dropLog(dropName, "Failed to calculate checksum for " + items[i].name);
+			continue;
 		}
 
-		index = findList.findIndex(toDrop => toDrop.skin === ItemDB.getImage(items[i]) && toDrop.checksum === checksum)
+		index = findList.findIndex(toDrop => toDrop.skin === ItemDB.getImage(items[i]) && toDrop.checksum === checksum);
 
-        if (index !== -1) { // item match and have requested skin.
-            foundItems.push(findList[index])
-            findList.splice(index, 1); // remove found job
+		if (index !== -1) { // item match and have requested skin.
+			foundItems.push(findList[index]);
+			findList.splice(index, 1); // remove found job
 			dropList.push(copyUnit(items[i]));
 		}
 
@@ -345,11 +346,11 @@ function DropIt() {
 	print("Found " + dropList.length + "/" + seekCount + " items to drop");
 	preDropCount = me.itemcount;
 
-DropLoop:
+	DropLoop:
 	for (i = 0; i < dropList.length; i++) {
 		itemRead = dropList[i].fname.split("\n").reverse().join(" ").replace(/(\\xff|ÿ)c[0-9!"+<;.*]/gi, "").trim(); // make item name user readable
 
-		if (dropList[i].location == 7 && !getUIFlag(0x19)) {
+		if (dropList[i].location === 7 && !getUIFlag(0x19)) {
 			Town.openStash();
 		}
 
@@ -372,7 +373,7 @@ DropLoop:
 			}
 
 			dropLog(dropName, "Failed to drop item " + itemRead + " (" + x + " retry)");
-			delay((me.ping||0) * 2 + 200);
+			delay((me.ping || 0) * 2 + 200);
 
 			if (getLocation() !== null) {
 				D2Bot.restart();
@@ -397,10 +398,10 @@ DropLoop:
 	}
 
 	D2Bot.printToConsole("[ user: \"" + dropName + "\" dropped: \"" + (preDropCount - me.itemcount) + "/" + seekCount + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "/" + me.realm + "\" ]", 4);
-	FileTools.appendText('databases/' + me.profile + ".txt", me.profile + ":" + dropName + " Dropped " + (preDropCount - me.itemcount) + " items in " + me.gamename + "/" + me.realm + "\n")
+	FileTools.appendText('databases/' + me.profile + ".txt", me.profile + ":" + dropName + " Dropped " + (preDropCount - me.itemcount) + " items in " + me.gamename + "/" + me.realm + "\n");
 	// if (itemsToDrop.length > 0) {
-		// D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + " on " + " Realm " + me.realm + "\" ]", 9);
-		// dropLog(dropName, "[ failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
+	// D2Bot.printToConsole("[ user: \"" + dropName + "\" failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + " on " + " Realm " + me.realm + "\" ]", 9);
+	// dropLog(dropName, "[ failed: \"" + itemsToDrop.length + " items\" game: \"" + me.gamename + "//" + me.gamepassword + "\" ]");
 	// }
 
 	MuleLogger.logChar();
@@ -414,32 +415,32 @@ function dropLog(who, info) {
 	if (!who) who = "unknown";
 	if (!info) return false;
 
-	var date = new Date(),
-	h = date.getHours(),
-	m = date.getMinutes(),
-	s = date.getSeconds(),
-	y = date.getFullYear(),
-	mo = date.getMonth()+1,
-	d = date.getDate(),
-	timestamp = "[" + y + "." + (mo < 10 ? "0" + mo : mo) + "." + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "] ";
+	let date = new Date(),
+		h = date.getHours(),
+		m = date.getMinutes(),
+		s = date.getSeconds(),
+		y = date.getFullYear(),
+		mo = date.getMonth() + 1,
+		d = date.getDate(),
+		timestamp = "[" + y + "." + (mo < 10 ? "0" + mo : mo) + "." + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "] ";
 
-	var line = timestamp + "<" + me.profile + "> " + info;
+	let line = timestamp + "<" + me.profile + "> " + info;
 
 	Misc.fileAction("databases/logs/drop_" + who + ".log", 2, line + "\n");
 	return true;
 }
 
 function logFG(who, value, success, f) {
-	var date = new Date(),
-	h = date.getHours(),
-	m = date.getMinutes(),
-	s = date.getSeconds(),
-	y = date.getFullYear(),
-	mo = date.getMonth()+1,
-	d = date.getDate(),
-	timestamp = "" + y + "-" + (mo < 10 ? "0" + mo : mo) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "";
+	let date = new Date(),
+		h = date.getHours(),
+		m = date.getMinutes(),
+		s = date.getSeconds(),
+		y = date.getFullYear(),
+		mo = date.getMonth() + 1,
+		d = date.getDate(),
+		timestamp = "" + y + "-" + (mo < 10 ? "0" + mo : mo) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "";
 
-	var text = timestamp+","+who+","+value+","+success+","+f;
+	let text = timestamp + "," + who + "," + value + "," + success + "," + f;
 
 	Misc.fileAction("databases/logs/FG_Sales.csv", 2, text + "\n");
 	return true;
@@ -525,11 +526,11 @@ function locationAction() {
 		return;
 	}
 
-	var i, string, text, location, quitFromLobby;
+	let i, string, text, location, quitFromLobby;
 
 	location = getLocation();
 
-MainSwitch:
+	MainSwitch:
 	switch (location) {
 	case 0:
 		break;
@@ -564,7 +565,7 @@ MainSwitch:
 
 		if (quitFromLobby) {
 			quitFromLobby = false;
-			ControlAction.click(6, 693, 490, 80, 20) // Quit from Lobby retry attempt
+			ControlAction.click(6, 693, 490, 80, 20); // Quit from Lobby retry attempt
 			break;
 		}
 
