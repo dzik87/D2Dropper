@@ -8,7 +8,7 @@
 *	@version		2021/01/30
 **/
 
-var ItemDB = {
+const ItemDB = {
 	skipEquiped: true, // skip equipped items in logging
 	mulePass: "", // default password if its not found anywhere else
 	
@@ -22,76 +22,78 @@ var ItemDB = {
 	count: 0,
 	single: [],
 	
-	DBTblAccs:		"muleAccounts (accountRealm, accountLogin, accountPasswd)",
-	DBTblChars:		"muleChars (charAccountId, charName, charExpansion, charHardcore, charLadder, charClassId)",
-	DBTblItems:		"muleItems (itemCharId, itemName, itemType, itemClass, itemClassid, itemQuality, itemFlag, itemColor, itemImage, itemMD5, itemDescription, itemLocation, itemX, itemY)",
-	DBTblStats:		"muleItemsStats (statsItemId, statsName, statsValue)",
+	DBTblAccs:	"muleAccounts (accountRealm, accountLogin, accountPasswd)",
+	DBTblChars:	"muleChars (charAccountId, charName, charExpansion, charHardcore, charLadder, charClassId)",
+	DBTblItems:	"muleItems (itemCharId, itemName, itemType, itemClass, itemClassid, itemQuality, itemFlag, itemColor, itemImage, itemMD5, itemDescription, itemLocation, itemX, itemY)",
+	DBTblStats:	"muleItemsStats (statsItemId, statsName, statsValue)",
 	
 	realms: { "uswest": 0, "useast": 1, "asia": 2, "europe": 3 },
 	
 	log: function (data) {
-		var date = new Date(),
-		h = date.getHours(),
-		m = date.getMinutes(),
-		s = date.getSeconds(),
-		y = date.getFullYear(),
-		mo = date.getMonth()+1,
-		d = date.getDate(),
-		timestamp = "[" + y + "." + (mo < 10 ? "0" + mo : mo) + "." + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "] ";
+		let date = new Date(),
+			h = date.getHours(),
+			m = date.getMinutes(),
+			s = date.getSeconds(),
+			y = date.getFullYear(),
+			mo = date.getMonth() + 1,
+			d = date.getDate(),
+			timestamp = "[" + y + "." + (mo < 10 ? "0" + mo : mo) + "." + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s) + "] ";
 		Misc.fileAction(this.logFile, 2, timestamp + " - [ profile: \"" + me.profile + "\" account: \"" + me.account + "\" char: \"" + me.name + "\" ] " + data + "\n");
 	},
 	
 	init: function (drop) {
-		var success = true;
+		let success = true;
 		if (this.createDB()) {
 			print("ItemDB :: New database created!");
 		}
 		try {
-			if(!drop)
+			if (!drop) {
 				print("ItemDB :: Starting database connection");
+			}
 			
 			this.tick 		= getTickCount();
 			
 			//init db connection and open it. this is our handler now.	
 			this.DBConnect	= new SQLite(this.DB, true);
-			this.DBConnect.execute("BEGIN TRANSACTION;");	
+			this.DBConnect.execute("BEGIN TRANSACTION;");
 			this.ID.acc 	= this.insertAccs(!drop);
 			this.ID.chara	= this.insertChar();
 			this.logItems(drop);
-			this.DBConnect.execute("COMMIT;");			
-		} catch (e) { 
+			this.DBConnect.execute("COMMIT;");
+		} catch (e) {
 			success = false;
 			this.log(e);
 		} finally {
 			this.DBConnect.close();
 		}
 		
-		if(!drop) {
+		if (!drop) {
 			print("ItemDB :: Closing database connection after: " + ((getTickCount() - this.tick) / 1000).toFixed(2) + "s");
 			this.log(this.count + " items logged in " + ((getTickCount() - this.tick) / 1000).toFixed(2) + "s");
 		}
 		
-		return success;			
+		return success;
 	},
 	
 	deleteChar: function(a) {
-		var success = true;
+		let success = true;
 		try {
 			this.DBConnect	= new SQLite(this.DB, true);
 			this.DBConnect.execute("BEGIN TRANSACTION;");
-			this.DBConnect.execute("DELETE FROM muleChars WHERE charName = '" + a + "';")
-			this.DBConnect.execute("COMMIT;");			
-		} catch (e) { 
+			this.DBConnect.execute("DELETE FROM muleChars WHERE charName = '" + a + "';");
+			this.DBConnect.execute("COMMIT;");
+		} catch (e) {
 			success = false;
 			this.log(e);
 		} finally {
 			this.DBConnect.close();
-		}		
-		return success;		
+		}
+		return success;
 	},
 	
 	createDB: function () {
-		var i, folder, data = [
+		let folder;
+		let data = [
 			"PRAGMA main.page_size=4096;",
 			"PRAGMA main.cache_size=10000;",
 			"PRAGMA main.locking_mode=EXCLUSIVE;",
@@ -108,17 +110,17 @@ var ItemDB = {
 			"CREATE UNIQUE INDEX IF NOT EXISTS [IDX_MULEITEMSSTATS_STATSITEMID] ON [muleItemsStats]([statsItemId]  ASC,[statsName]  ASC);",
 			"CREATE TRIGGER [ON_TBL_MULEACCOUNTS_DELETE] BEFORE DELETE ON [muleAccounts] FOR EACH ROW BEGIN DELETE FROM muleChars WHERE charAccountId = OLD.accountId; END;",
 			"CREATE TRIGGER [ON_TBL_MULECHARS_DELETE] BEFORE DELETE ON [muleChars] FOR EACH ROW BEGIN DELETE FROM muleItems WHERE itemCharId = OLD.charId; END;",
-			"CREATE TRIGGER [ON_TBL_MULEITEMS_DELETE] BEFORE DELETE ON [muleItems] FOR EACH ROW BEGIN DELETE FROM muleItemsStats WHERE statsItemId = OLD.itemId; END;"			
-			];
+			"CREATE TRIGGER [ON_TBL_MULEITEMS_DELETE] BEFORE DELETE ON [muleItems] FOR EACH ROW BEGIN DELETE FROM muleItemsStats WHERE statsItemId = OLD.itemId; END;"
+		];
 		
-		if (!FileTools.exists(this.DB)){
+		if (!FileTools.exists(this.DB)) {
 			if (!FileTools.exists("databases")) {
 				folder = dopen("");
-				folder.create("databases");			
+				folder.create("databases");
 			}
 			this.DBConnect = new SQLite(this.DB, true);
 			
-			for (i = 0; i < data.length; i++) {
+			for (let i = 0; i < data.length; i++) {
 				this.DBConnect.execute(data[i]);
 			}
 			
@@ -130,13 +132,13 @@ var ItemDB = {
 		}
 	},
 	
-	insertAccs: function(update) {
-		var handle, accID, accPW;
+	insertAccs: function (update) {
+		let accID, accPW;
 		//realm, account
 		
 		this.getPasswords();
 		
-		handle = this.DBConnect.query("SELECT accountId, accountPasswd FROM muleAccounts WHERE accountLogin = '" + me.account.toLowerCase() + "' AND accountRealm = '" + this.realms[me.realm.toLowerCase()] + "';");
+		let handle = this.DBConnect.query("SELECT accountId, accountPasswd FROM muleAccounts WHERE accountLogin = '" + me.account.toLowerCase() + "' AND accountRealm = '" + this.realms[me.realm.toLowerCase()] + "';");
 		handle.next();
 		
 		if (handle.ready) {
@@ -144,24 +146,24 @@ var ItemDB = {
 			accPW = handle.getColumnValue(1);
 		} else {
 			while (!this.DBConnect.execute("INSERT into " + this.DBTblAccs + " values ('" + this.realms[me.realm.toLowerCase()] + "', '" + me.account.toLowerCase() + "', '" + this.mulePass + "');")) {
-					delay(500);
+				delay(500);
 			}
 			accID = this.DBConnect.lastRowId;
 			print("ItemDB :: Added account \"" + me.account + "\" into database with ID: " + accID);
 		}
 		
-		if (!accPW && this.mulePass != accPW && update) {
+		if (!accPW && this.mulePass !== accPW && update) {
 			while (!this.DBConnect.execute("UPDATE muleAccounts SET accountPasswd = '" + this.mulePass + "' WHERE accountId = " + accID + ";")) {
-					delay(500);
+				delay(500);
 			}
 			this.log("Updated password for: \"" + me.account + "\" old: \"" + accPW + "\" new: \"" + this.mulePass + "\" ");
 		}
 		
-		return accID;	
+		return accID;
 	},
 	
 	insertChar: function() {
-		var handle, charID, charClass;
+		let charID, charClass;
 		// id, me.name, me.gametype, me.playertype, me.ladder, me.classid
 		
 		this.ID.exp		=	me.gametype ? "1" : "0";
@@ -169,7 +171,7 @@ var ItemDB = {
 		this.ID.lad		=	me.ladder ? "1" : "0";
 		this.ID.classId	=	me.classid;
 		
-		handle = this.DBConnect.query("SELECT charId, charClassId FROM muleChars WHERE charAccountId = '" + this.ID.acc + "' AND charName = '" + me.name + "';");
+		let handle = this.DBConnect.query("SELECT charId, charClassId FROM muleChars WHERE charAccountId = '" + this.ID.acc + "' AND charName = '" + me.name + "';");
 		handle.next();
 		
 		if (handle.ready) {
@@ -177,7 +179,7 @@ var ItemDB = {
 			charClass	= handle.getColumnValue(1);
 			
 			while (!this.DBConnect.execute("UPDATE muleChars SET charClassId = " + this.ID.classId + " WHERE charId = " + charID + ";")) {
-					delay(500);
+				delay(500);
 			}
 			
 		} else {
@@ -188,21 +190,21 @@ var ItemDB = {
 			print("ItemDB :: added character \"" + me.name + "\" into database with ID: " + charID);
 		}
 		
-		return charID;	
+		return charID;
 	},
 	
 	logItems: function (dd) {
-		var items, i;
+		let items;
 		
-		if(dd) {
-			var handle, itemid, dropitam;
+		if (dd) {
+			let handle, itemid, dropitam;
 			// id, me.name, me.gametype, me.playertype, me.ladder
 			
 			if (typeof dd === "string") {
 				dd = [dd];
 			}
 			
-			for (i = 0; i < dd.length; i++) {
+			for (let i = 0; i < dd.length; i++) {
 				handle = this.DBConnect.query("SELECT itemId,itemName FROM muleItems LEFT JOIN muleChars ON itemCharId = charId WHERE charAccountId = '" + this.ID.acc + "' AND charName = '" + me.name + "' AND itemMD5 = '" + dd[i] + "' LIMIT 1;");
 				handle.next();
 				
@@ -219,12 +221,12 @@ var ItemDB = {
 				this.DBConnect.execute("DELETE FROM muleItems WHERE itemId = " + itemid + ";");
 				
 				this.log("dropped " + dropitam + " in " + me.gamename + "//" + me.gamepassword);
-			}	
+			}
 			print("ItemDB :: removed " + dd.length + " items from database.");
 			return true;
 		}
 		//remove items from DB with your charID to avoid double entrys
-		while(!this.DBConnect.execute("DELETE FROM muleItems WHERE itemCharId = " + this.ID.chara + ";")) {
+		while (!this.DBConnect.execute("DELETE FROM muleItems WHERE itemCharId = " + this.ID.chara + ";")) {
 			delay(500);
 		}
 		
@@ -232,9 +234,9 @@ var ItemDB = {
 		//list of our items
 		items 	= me.getItems();
 		
-		for (i = 0; i < items.length; i++) {
+		for (let i = 0; i < items.length; i++) {
 			if ([22, 76, 77, 78].indexOf(items[i].itemType) === -1) {	//skip scrools and potions
-				if(items[i].mode === 1 && this.skipEquiped) {
+				if (items[i].mode === 1 && this.skipEquiped) {
 					continue;
 				}
 				this.ID.item 	= 	this.insertItem(items[i]);
@@ -247,7 +249,7 @@ var ItemDB = {
 	},
 	
 	insertItem: function (item) {
-		var handle, itam = {}, itemID;
+		let itam = {}, itemID;
 		//itemchar, itemname, itemtype, itemclass, itemclassid, itemquality, itemflag, itemcolor, itemimage, itemdesc
 		itam.fname 			= this.safeStrings(item.fname.split("\n").reverse().join(" ").replace(/(y|ÿ)c[0-9!"+<;.*]/, "").trim());
 		itam.flag			= item.getFlags();
@@ -256,7 +258,7 @@ var ItemDB = {
 		itam.MD5 			= md5(item.description);
 		itam.description	= this.safeStrings(this.getItemDesc(item));
 		
-		while(!this.DBConnect.execute("INSERT INTO " + this.DBTblItems + " VALUES ('" + this.ID.chara + "', '" + itam.fname + "', '" + item.itemType + "', '" + item.itemclass + "', '" + item.classid + "', '" + item.quality + "', '" + itam.flag + "', '" + itam.color + "', '" + itam.image + "', '" + itam.MD5 + "', '" + itam.description + "', '" + item.location + "', '" + item.x + "', '" + item.y + "');")) {
+		while (!this.DBConnect.execute("INSERT INTO " + this.DBTblItems + " VALUES ('" + this.ID.chara + "', '" + itam.fname + "', '" + item.itemType + "', '" + item.itemclass + "', '" + item.classid + "', '" + item.quality + "', '" + itam.flag + "', '" + itam.color + "', '" + itam.image + "', '" + itam.MD5 + "', '" + itam.description + "', '" + item.location + "', '" + item.x + "', '" + item.y + "');")) {
 			delay(500);
 		}
 		itemID = this.DBConnect.lastRowId;
@@ -265,19 +267,17 @@ var ItemDB = {
 	},
 	
 	insertStats: function (item) {
-		var a, stats;
+		let stats = this.dumpItemStats(item);
 		
-		stats = this.dumpItemStats(item);
-		
-		for (a in stats) {
-			while(!this.DBConnect.execute("INSERT INTO " + this.DBTblStats + " VALUES ('" + this.ID.item + "', '" + a + "', '" + stats[a] + "');")){
+		for (let a in stats) {
+			while (!this.DBConnect.execute("INSERT INTO " + this.DBTblStats + " VALUES ('" + this.ID.item + "', '" + a + "', '" + stats[a] + "');")) {
 				delay(500);
 			}
-		}		
+		}
 	},
 	
 	dumpItemStats: function (item) {	//ty kolton
-		var val, i, n,
+		let val, i, n,
 			stats = item.getStat(-2),
 			dump = {};
 
@@ -355,133 +355,133 @@ var ItemDB = {
 	
 	getImage: function (unit) {
 		//copy from kolbot
-		var code, i;
+		let code, i;
 		switch (unit.quality) {
-			case 5: // Set
-				switch (unit.classid) {
-				case 27: // Angelic sabre
-					code = "inv9sbu";
+		case 5: // Set
+			switch (unit.classid) {
+			case 27: // Angelic sabre
+				code = "inv9sbu";
 
-					break;
-				case 74: // Arctic short war bow
-					code = "invswbu";
+				break;
+			case 74: // Arctic short war bow
+				code = "invswbu";
 
-					break;
-				case 308: // Berserker's helm
-					code = "invhlmu";
+				break;
+			case 308: // Berserker's helm
+				code = "invhlmu";
 
-					break;
-				case 330: // Civerb's large shield
-					code = "invlrgu";
+				break;
+			case 330: // Civerb's large shield
+				code = "invlrgu";
 
-					break;
-				case 31: // Cleglaw's long sword
-				case 227: // Szabi's cryptic sword
-					code = "invlsdu";
+				break;
+			case 31: // Cleglaw's long sword
+			case 227: // Szabi's cryptic sword
+				code = "invlsdu";
 
-					break;
-				case 329: // Cleglaw's small shield
-					code = "invsmlu";
+				break;
+			case 329: // Cleglaw's small shield
+				code = "invsmlu";
 
-					break;
-				case 328: // Hsaru's buckler
-					code = "invbucu";
+				break;
+			case 328: // Hsaru's buckler
+				code = "invbucu";
 
-					break;
-				case 306: // Infernal cap / Sander's cap
-					code = "invcapu";
+				break;
+			case 306: // Infernal cap / Sander's cap
+				code = "invcapu";
 
-					break;
-				case 30: // Isenhart's broad sword
-					code = "invbsdu";
+				break;
+			case 30: // Isenhart's broad sword
+				code = "invbsdu";
 
-					break;
-				case 309: // Isenhart's full helm
-					code = "invfhlu";
+				break;
+			case 309: // Isenhart's full helm
+				code = "invfhlu";
 
-					break;
-				case 333: // Isenhart's gothic shield
-					code = "invgtsu";
+				break;
+			case 333: // Isenhart's gothic shield
+				code = "invgtsu";
 
-					break;
-				case 326: // Milabrega's ancient armor
-				case 442: // Immortal King's sacred armor
-					code = "invaaru";
+				break;
+			case 326: // Milabrega's ancient armor
+			case 442: // Immortal King's sacred armor
+				code = "invaaru";
 
-					break;
-				case 331: // Milabrega's kite shield
-					code = "invkitu";
+				break;
+			case 331: // Milabrega's kite shield
+				code = "invkitu";
 
-					break;
-				case 332: // Sigon's tower shield
-					code = "invtowu";
+				break;
+			case 332: // Sigon's tower shield
+				code = "invtowu";
 
-					break;
-				case 325: // Tancred's full plate mail
-					code = "invfulu";
+				break;
+			case 325: // Tancred's full plate mail
+				code = "invfulu";
 
-					break;
-				case 3: // Tancred's military pick
-					code = "invmpiu";
+				break;
+			case 3: // Tancred's military pick
+				code = "invmpiu";
 
-					break;
-				case 113: // Aldur's jagged star
-					code = "invmstu";
+				break;
+			case 113: // Aldur's jagged star
+				code = "invmstu";
 
-					break;
-				case 234: // Bul-Kathos' colossus blade
-					code = "invgsdu";
+				break;
+			case 234: // Bul-Kathos' colossus blade
+				code = "invgsdu";
 
-					break;
-				case 372: // Grizwold's ornate plate
-					code = "invxaru";
+				break;
+			case 372: // Grizwold's ornate plate
+				code = "invxaru";
 
-					break;
-				case 366: // Heaven's cuirass
-				case 215: // Heaven's reinforced mace
-				case 449: // Heaven's ward
-				case 426: // Heaven's spired helm
-					code = "inv" + unit.code + "s";
+				break;
+			case 366: // Heaven's cuirass
+			case 215: // Heaven's reinforced mace
+			case 449: // Heaven's ward
+			case 426: // Heaven's spired helm
+				code = "inv" + unit.code + "s";
 
-					break;
-				case 357: // Hwanin's grand crown
-					code = "invxrnu";
+				break;
+			case 357: // Hwanin's grand crown
+				code = "invxrnu";
 
-					break;
-				case 195: // Nalya's scissors suwayyah
-					code = "invskru";
+				break;
+			case 195: // Nalya's scissors suwayyah
+				code = "invskru";
 
-					break;
-				case 395: // Nalya's grim helm
-				case 465: // Trang-Oul's bone visage
-					code = "invbhmu";
+				break;
+			case 395: // Nalya's grim helm
+			case 465: // Trang-Oul's bone visage
+				code = "invbhmu";
 
-					break;
-				case 261: // Naj's elder staff
-					code = "invcstu";
+				break;
+			case 261: // Naj's elder staff
+				code = "invcstu";
 
-					break;
-				case 375: // Orphan's round shield
-					code = "invxmlu";
+				break;
+			case 375: // Orphan's round shield
+				code = "invxmlu";
 
-					break;
-				case 12: // Sander's bone wand
-					code = "invbwnu";
+				break;
+			case 12: // Sander's bone wand
+				code = "invbwnu";
+
+				break;
+			}
+
+			break;
+		case 7: // Unique
+			for (i = 0; i < 401; i += 1) {
+				if (unit.fname.split("\n").reverse()[0].indexOf(getLocaleString(getBaseStat(17, i, 2))) > -1) {
+					code = getBaseStat(17, i, "invfile");
 
 					break;
 				}
+			}
 
-				break;
-			case 7: // Unique
-				for (i = 0; i < 401; i += 1) {
-					if (unit.fname.split("\n").reverse()[0].indexOf(getLocaleString(getBaseStat(17, i, 2))) > -1) {
-						code = getBaseStat(17, i, "invfile");
-
-						break;
-					}
-				}
-
-				break;
+			break;
 		}
 
 		if (!code) {
@@ -504,24 +504,24 @@ var ItemDB = {
 	safeStrings: function(string) {
 		string = string.replace(/[\0\n\r\b\t\\'"\x1a]/g, function (s) {
 			switch (s) {
-				case "\0":
-					return "\\0";
-				case "\n":
-					return "\\n";
-				case "\r":
-					return "\\r";
-				case "\b":
-					return "\\b";
-				case "\t":
-					return "\\t";
-				case "\x1a":
-					return "\\Z";
-				case "'":
-					return "''";
-				case '"':
-					return '""';
-				default:
-					return "\\" + s;
+			case "\0":
+				return "\\0";
+			case "\n":
+				return "\\n";
+			case "\r":
+				return "\\r";
+			case "\b":
+				return "\\b";
+			case "\t":
+				return "\\t";
+			case "\x1a":
+				return "\\Z";
+			case "'":
+				return "''";
+			case '"':
+				return '""';
+			default:
+				return "\\" + s;
 			}
 		});
 		
@@ -529,7 +529,7 @@ var ItemDB = {
 	},
 	
 	getItemDesc: function (unit) {
-		var i, desc,
+		let i, desc,
 			stringColor = "<span class='color0'>";
 
 		desc = unit.description;
@@ -572,42 +572,39 @@ var ItemDB = {
 	},
 	
 	getPasswords: function() {	//ty Adhd
-		var i;
-		
-		if (!isIncluded("MuleLogger.js")) {
-			include("MuleLogger.js");
-		}
+		!isIncluded("MuleLogger.js") && include("MuleLogger.js");
 
-		for (i in MuleLogger.LogAccounts) {
-			if (MuleLogger.LogAccounts.hasOwnProperty(i) && typeof i === "string") {
-				for (var j in MuleLogger.LogAccounts[i]) {
-					if (MuleLogger.LogAccounts[i].hasOwnProperty(j) && typeof j === "string") {
+		for (let i in MuleLogger.DropperAccounts) {
+			if (MuleLogger.DropperAccounts.hasOwnProperty(i) && typeof i === "string") {
+				for (let j in MuleLogger.DropperAccounts[i]) {
+					if (MuleLogger.DropperAccounts[i].hasOwnProperty(j) && typeof j === "string") {
 						if (j.split("/")[0].toLowerCase() === me.account.toLowerCase()) {
 							this.mulePass = j.split("/")[1];
+
 							return true;
 						}
-					}					
+					}
 				}
 			}
 		}
 		
-		if (!isIncluded("AutoMule.js")) {
-			include("AutoMule.js");
-		}
+		!isIncluded("AutoMule.js") && include("AutoMule.js");
 		
-		for (i in AutoMule.Mules) {
+		for (let i in AutoMule.Mules) {
 			if (AutoMule.Mules[i].accountPrefix) {
 				if (me.account.toLowerCase().match(AutoMule.Mules[i].accountPrefix.toLowerCase())) {
 					this.mulePass = AutoMule.Mules[i].accountPassword;
+
 					return true;
 				}
 			}
 		}
 		
-		for (i in AutoMule.TorchAnniMules) {
+		for (let i in AutoMule.TorchAnniMules) {
 			if (AutoMule.TorchAnniMules[i].accountPrefix) {
 				if (me.account.toLowerCase().match(AutoMule.TorchAnniMules[i].accountPrefix.toLowerCase())) {
 					this.mulePass = AutoMule.TorchAnniMules[i].accountPassword;
+
 					return true;
 				}
 			}
@@ -617,7 +614,7 @@ var ItemDB = {
 	},
 	
 	deleteCharacter: function(obj) {
-		var success = true;
+		let success = true;
 		try {
 			print("ItemDB :: Starting database connection");
 			
@@ -630,7 +627,7 @@ var ItemDB = {
 			this.DBConnect.execute("COMMIT;");
 			
 			print("ItemDB :: Starting database connection");
-		} catch (e) { 
+		} catch (e) {
 			success = false;
 			this.log(e);
 		} finally {
