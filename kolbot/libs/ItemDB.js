@@ -572,12 +572,12 @@ const ItemDB = {
 	},
 	
 	getPasswords: function() {	//ty Adhd
-		!isIncluded("MuleLogger.js") && include("MuleLogger.js");
+		!isIncluded("DropperSetup.js") && include("DropperSetup.js");
 
-		for (let i in MuleLogger.DropperAccounts) {
-			if (MuleLogger.DropperAccounts.hasOwnProperty(i) && typeof i === "string") {
-				for (let j in MuleLogger.DropperAccounts[i]) {
-					if (MuleLogger.DropperAccounts[i].hasOwnProperty(j) && typeof j === "string") {
+		for (let i in DropperAccounts) {
+			if (DropperAccounts.hasOwnProperty(i) && typeof i === "string") {
+				for (let j in DropperAccounts[i]) {
+					if (DropperAccounts[i].hasOwnProperty(j) && typeof j === "string") {
 						if (j.split("/")[0].toLowerCase() === me.account.toLowerCase()) {
 							this.mulePass = j.split("/")[1];
 
@@ -587,7 +587,19 @@ const ItemDB = {
 				}
 			}
 		}
-		
+
+		!isIncluded("MuleLogger.js") && include("MuleLogger.js");
+
+		for (let i in MuleLogger.LogAccounts) {
+			if (MuleLogger.LogAccounts.hasOwnProperty(i) && typeof i === "string") {
+				if (i.split("/")[0].toLowerCase() === me.account.toLowerCase()) {
+					this.mulePass = i.split("/")[1];
+
+					return true;
+				}
+			}
+		}
+
 		!isIncluded("AutoMule.js") && include("AutoMule.js");
 		
 		for (let i in AutoMule.Mules) {
