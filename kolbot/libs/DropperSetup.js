@@ -22,7 +22,7 @@ const DropperAccounts = {
 	}
 };
 
-function parseDropperAccounts (accounts, chars) {
+function parseDropperAccounts (accounts = [], chars = []) {
 	for (let i in DropperAccounts) {
 		if (DropperAccounts.hasOwnProperty(i) && typeof i === "string" && i.toLowerCase() === me.profile.toLowerCase()) {
 			for (let j in DropperAccounts[i]) {
