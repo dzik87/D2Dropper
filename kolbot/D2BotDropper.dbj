@@ -19,6 +19,8 @@ let usePackets = true, // Set true to drop using packets
 	restartDropper = false; // Set true to restart dropper profile after successful drop, or false to quit to lobby
 
 include("json2.js");
+include("NTItemParser.dbl");
+include("NTItemAlias.dbl");
 include('polyfill.js');
 include("OOG.js");
 include("common/misc.js");
